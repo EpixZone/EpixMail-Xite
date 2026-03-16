@@ -1,0 +1,40 @@
+{
+	"db_name": "EpixMail",
+	"db_file": "data/users/epixmail.db",
+	"version": 2,
+	"maps": {
+		".+/data.json": {
+			"to_table": [
+				{
+					"node": "conversations",
+					"table": "conversation",
+					"key_col": "conv_id",
+					"import_cols": ["peer_xid", "established", "my_seq"]
+				}
+			],
+			"to_keyvalue": ["publickey", "signed_prekey", "prekey_sig", "prekey_ts"]
+		},
+		".+/content.json": {
+			"to_keyvalue": ["cert_user_id"]
+		}
+	},
+	"tables": {
+		"conversation": {
+			"cols": [
+				["conv_id", "TEXT"],
+				["peer_xid", "TEXT"],
+				["established", "INTEGER"],
+				["my_seq", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": [
+				"CREATE UNIQUE INDEX conversation_key ON conversation(json_id, conv_id)",
+				"CREATE INDEX conversation_peer ON conversation(peer_xid)"
+			],
+			"schema_changed": 2
+		}
+	},
+	"feeds": {
+		"Encrypted messages": "SELECT 'message' AS type, MAX(conversation.established) AS date_added, 'Epix Mail' AS title, 'Encrypted conversation with ' || conversation.peer_xid AS body, '' AS url FROM conversation WHERE conversation.established > 0 GROUP BY conversation.peer_xid"
+	}
+}

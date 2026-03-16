@@ -1,0 +1,18 @@
+{
+  "files": {},
+  "ignore": ".*",
+  "modified": 1436226671.535,
+  "signs": {},
+  "user_contents": {
+    "cert_signers": {
+      "xid": ["chain"]
+    },
+    "permission_rules": {
+      ".*": {
+        "files_allowed": "data.json",
+        "max_size": 200000
+      }
+    },
+    "permissions": {}
+  }
+}
