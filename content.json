@@ -4,20 +4,24 @@
  "background-color": "#F2F4F6",
  "background-color-dark": "#26242E",
  "description": "End-to-end encrypted P2P messaging",
- "epixnet_version": "0.0.2",
+ "epixnet_version": "0.0.6",
  "favicon": "epixme.ico",
  "files": {
   "LICENSE": {
    "sha512": "e67014a69caa38c58575f333619243c9ebb3c98d462f0b4823ff5ed3d2cfdba3",
    "size": 1077
   },
+  "README.md": {
+   "sha512": "89bd0e4cc3ff8c0e9ba04d1e1ed79a1538589c6d224b51e5ab2f1cd5f359f09b",
+   "size": 2135
+  },
   "css/all.css": {
    "sha512": "e6e7fd8b87f102acb9b4c5bac3c61decf9ab0fc369f1db3eaed24ee7ac3a7d5e",
    "size": 166142
   },
   "data-default/users/content-default.json": {
-   "sha512": "f82fb5538aba9c1643f7f7b865ccf92045aef71a7c0c57c0025dff5a8baa90ac",
-   "size": 301
+   "sha512": "8cb251bbd5a19e295ccd9caa8e1846bea3b55c8dd20d7a5095d645366c6ba33f",
+   "size": 306
   },
   "dbschema.json": {
    "sha512": "86adef4df4af5ca3a3fb842196f22e7369f6e0021ec1443e8d3ea92755ca16f9",
@@ -181,11 +185,17 @@
   }
  },
  "ignore": "(merged-.*|data/users/.*|css/(?!all\\.css)|.*\\.coffee|\\.git)",
+ "includes": {
+  "data/users/content.json": {
+   "signers": [],
+   "signers_required": 1
+  }
+ },
  "inner_path": "content.json",
- "modified": 1773633028,
+ "modified": 1775107797,
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
- "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HIbdQO9C7VsHVXsGu5bLK+5A2LyMKeCynhUMibwU1mMoJJRfgee03OdGoj0W6Rp5DLmzDRV/8F0JV4MwjOrjsWY="},
+ "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "G66ngHWZNTQTPRohkRnaLZe+7gAmbgQS18ZkhTBGAbEiTfgXql1pdta5V739sLpn0Kxni/n7i9jmxsfNI/ZRc/I="},
  "signs_required": 1,
  "title": "Epix Mail",
  "translate": ["js/EpixMail.js","js/Leftbar.js","js/StartScreen.js","js/MessageCreate.js","js/MessageList.js","js/MessageShow.js","js/User.js","js/utils/Crypto.js"],

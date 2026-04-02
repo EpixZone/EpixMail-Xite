@@ -5,7 +5,7 @@
   "signs": {},
   "user_contents": {
     "cert_signers": {
-      "xid": ["chain"]
+      "xid.epix": ["chain"]
     },
     "permission_rules": {
       ".*": {
