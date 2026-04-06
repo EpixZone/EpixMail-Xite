@@ -35,6 +35,5 @@
 		}
 	},
 	"feeds": {
-		"Encrypted messages": "SELECT 'message' AS type, MAX(conversation.established) AS date_added, 'Epix Mail' AS title, 'Encrypted conversation with ' || conversation.peer_xid AS body, '' AS url FROM conversation WHERE conversation.established > 0 GROUP BY conversation.peer_xid"
 	}
 }

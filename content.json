@@ -4,7 +4,7 @@
  "background-color": "#F2F4F6",
  "background-color-dark": "#26242E",
  "description": "End-to-end encrypted P2P messaging",
- "epixnet_version": "0.0.6",
+ "epixnet_version": "0.1.0",
  "favicon": "epixme.ico",
  "files": {
   "LICENSE": {
@@ -24,8 +24,8 @@
    "size": 306
   },
   "dbschema.json": {
-   "sha512": "86adef4df4af5ca3a3fb842196f22e7369f6e0021ec1443e8d3ea92755ca16f9",
-   "size": 1141
+   "sha512": "a0af99df278262bf8e7c3a430048ce66f7319c4b5d9f6ccc9f0702303ebcf2b8",
+   "size": 863
   },
   "img/loading.gif": {
    "sha512": "8a42b98962faea74618113166886be488c09dad10ca47fe97005edc5fb40cc00",
@@ -36,8 +36,8 @@
    "size": 2283
   },
   "js/EpixMail.js": {
-   "sha512": "8306af89da902f78c4f05da539ee3a0ff4174be45e0b85c47c83cb7230bccb96",
-   "size": 5271
+   "sha512": "be10f3954ff7adea87d4b9f1e86585bb6b6255d7bfc427a6430d12ae34d700ce",
+   "size": 5365
   },
   "js/Leftbar.js": {
    "sha512": "e260b492afcc134ad22cbc87e8d4a38b3f735afc884dc28eb1e141d279e326a1",
@@ -56,8 +56,8 @@
    "size": 3495
   },
   "js/MessageListInbox.js": {
-   "sha512": "695a07f2be5ecccf3f6a77fc601b8f5dd6b136da847968052dfeb48694e3a1a8",
-   "size": 7558
+   "sha512": "2e99262df557a7d667e60b7b21e1cc6a9ded45f16f79a5e77e162418082bc579",
+   "size": 7698
   },
   "js/MessageListSent.js": {
    "sha512": "63f6f527c8b4bdeb6b88f7b2da87a4f245169e1416b3cf964b580bc735949918",
@@ -76,8 +76,8 @@
    "size": 4844
   },
   "js/User.js": {
-   "sha512": "6249c904d5fd12f4571cf060256a53bda6c532473171ff5f4bddae309b77e084",
-   "size": 8631
+   "sha512": "8f67ed655563593c92980624ef830768ed9f6380ada229f05000d20cbfc8d748",
+   "size": 9390
   },
   "js/Users.js": {
    "sha512": "ee4eef0edc1870d2259d25520b3305eb48dcadc7ea39cbf74a3c6166c5cc8a02",
@@ -192,10 +192,10 @@
   }
  },
  "inner_path": "content.json",
- "modified": 1775107797,
+ "modified": 1775417707,
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
- "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "G66ngHWZNTQTPRohkRnaLZe+7gAmbgQS18ZkhTBGAbEiTfgXql1pdta5V739sLpn0Kxni/n7i9jmxsfNI/ZRc/I="},
+ "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HESOszvrPOf3cK+Quj0r904PKiuLB7qMrkUx7sYqx8sjA84adxrTHtgIW/7T5ANUraABsJdjrFv/SsvByBc2+AE="},
  "signs_required": 1,
  "title": "Epix Mail",
  "translate": ["js/EpixMail.js","js/Leftbar.js","js/StartScreen.js","js/MessageCreate.js","js/MessageList.js","js/MessageShow.js","js/User.js","js/utils/Crypto.js"],

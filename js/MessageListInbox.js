@@ -17,10 +17,12 @@
       var my_xid = Page.user.getMyXid();
       if (!my_xid) return cb([]);
 
-      var query = "SELECT conversation.*, json.directory FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.peer_xid = ? ORDER BY conversation.established DESC";
-      Page.cmd("dbQuery", [query, [my_xid_dir]], (conv_rows) => {
+      var query = "SELECT conversation.*, json.directory FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.peer_xid = ? AND json.directory != ? ORDER BY conversation.established DESC";
+      Page.cmd("dbQuery", [query, [my_xid_dir, "data/users/" + my_xid_dir]], (conv_rows) => {
         if (!conv_rows || conv_rows.length === 0) {
-          this.loadOwnConversations(my_xid_dir, limit, cb);
+          this.loadOwnConversations(my_xid_dir, limit, (own_rows) => {
+            this.decryptAndBuildMessages(own_rows, limit, cb);
+          });
           return;
         }
 

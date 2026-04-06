@@ -101,9 +101,10 @@
 
     registerFeedFollows() {
       var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
+      if (!my_xid_dir) return;
       var feeds = {
         "New conversations": [
-          "SELECT 'message' AS type, MAX(conversation.established) AS date_added, 'Encrypted conversation' AS title, 'New conversation with ' || conversation.peer_xid AS body, '' AS url FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.established > 0 AND json.directory != 'data/users/" + my_xid_dir + "' GROUP BY conversation.peer_xid",
+          "SELECT 'message' AS type, MAX(conversation.established) AS date_added, 'Encrypted conversation' AS title, 'New conversation with ' || REPLACE(json.directory, 'data/users/', '') AS body, '' AS url FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.established > 0 AND conversation.peer_xid = '" + my_xid_dir + "' AND json.directory != 'data/users/" + my_xid_dir + "' GROUP BY json.directory",
           [""]
         ]
       };

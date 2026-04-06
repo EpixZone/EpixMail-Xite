@@ -62,6 +62,24 @@
       });
     }
 
+    // Get or create conversation only after message is ready — avoids persisting empty conversations on send failure
+    getOrCreateConversation(peer_xid, conv_id) {
+      if (!this.data.conversations) {
+        this.data.conversations = {};
+      }
+      if (this.data.conversations[conv_id]) {
+        return this.data.conversations[conv_id];
+      }
+      var conv = {
+        peer_xid: peer_xid,
+        established: Date.now(),
+        my_seq: 0,
+        messages: {}
+      };
+      this.data.conversations[conv_id] = conv;
+      return conv;
+    }
+
     getSenderPubkeys(cb) {
       var pubkey = this.data && this.data.publickey;
       if (!pubkey) return cb({});
@@ -72,9 +90,10 @@
     }
 
     sendMessage(peer_xid, subject, body, cb) {
-      this.getConversation(peer_xid, (conv, conv_id) => {
-        if (!conv) return cb(false);
-        var my_xid = this.getMyXid();
+      var my_xid = this.getMyXid();
+      if (!my_xid) return cb(false);
+      this.getConversationId(peer_xid, (conv_id) => {
+        if (!conv_id) return cb(false);
         Crypto.resolveAllPubkeys(peer_xid, (recipient_pubkeys, err) => {
           if (isEmpty(recipient_pubkeys)) {
             Page.cmd("wrapperNotification", ["error", err || "Could not find encryption keys for " + peer_xid]);
@@ -99,6 +118,8 @@
                   Page.cmd("wrapperNotification", ["error", "Signing failed"]);
                   return cb(false);
                 }
+                // Only create/persist the conversation after encryption + signing succeed
+                var conv = this.getOrCreateConversation(peer_xid, conv_id);
                 conv.my_seq += 1;
                 var ts = Date.now();
                 conv.messages[ts.toString()] = {
