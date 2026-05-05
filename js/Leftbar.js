@@ -35,6 +35,8 @@
       Page.saveLocalStorage(function() {
         Page.getLocalStorage();
       });
+      // Also clear old browser localStorage
+      Page.cmd("wrapperSetLocalStorage", {});
       return false;
     }
 

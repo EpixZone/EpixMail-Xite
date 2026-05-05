@@ -45,7 +45,7 @@
           var conv = Page.user.data.conversations[conv_id];
           for (var ts in conv.messages) {
             var msg = conv.messages[ts];
-            if (msg.from_xid === my_xid && msg.ct && msg.ct[my_xid_dir]) {
+            if (Crypto.normalizeXid(msg.from_xid) === Crypto.normalizeXid(my_xid) && msg.ct && msg.ct[my_xid_dir]) {
               raw_messages.push({
                 conv_id: conv_id,
                 peer_xid: conv.peer_xid,

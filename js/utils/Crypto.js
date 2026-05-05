@@ -1,17 +1,19 @@
 (function() {
 
   class Crypto {
-    // Generate deterministic conversation ID from two xID names
-    static getConversationId(xid_a, xid_b, cb) {
-      var sorted = [xid_a, xid_b].sort();
-      var data = sorted.join(":");
-      var encoder = new TextEncoder();
-      crypto.subtle.digest("SHA-256", encoder.encode(data)).then(function(hash) {
-        var hex = Array.from(new Uint8Array(hash)).map(function(b) {
-          return b.toString(16).padStart(2, "0");
-        }).join("");
-        cb(hex);
-      });
+    // Ensure xID has .epix TLD for consistent comparison
+    static normalizeXid(name) {
+      if (!name) return name;
+      return name.match(/\.epix$/i) ? name : name + ".epix";
+    }
+
+    // Generate a random conversation ID
+    static generateConversationId() {
+      var arr = new Uint8Array(32);
+      crypto.getRandomValues(arr);
+      return Array.from(arr).map(function(b) {
+        return b.toString(16).padStart(2, "0");
+      }).join("");
     }
 
     // Encrypt plaintext for multiple recipients

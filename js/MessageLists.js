@@ -30,7 +30,11 @@
 
     onSiteInfo(site_info) {
       this.sent.reload = true;
-      this.inbox.reload = true;
+      if (this._suppress_inbox_reload) {
+        this._suppress_inbox_reload = false;
+      } else {
+        this.inbox.reload = true;
+      }
       this.active.triggerLoad();
     }
   }

@@ -65,15 +65,31 @@
 
     getLocalStorage() {
       this.on_site_info.then(() => {
-        this.cmd("wrapperGetLocalStorage", [], (local_storage) => {
-          this.local_storage = local_storage || {};
+        this.cmd("userGetSettings", [], (settings) => {
+          settings = settings || {};
+          var mail = settings.mail || {};
+          this.local_storage = mail;
           if (!this.local_storage.read) this.local_storage.read = {};
           if (!this.local_storage.deleted) this.local_storage.deleted = [];
           if (!this.local_storage.parsed) this.local_storage.parsed = {};
 
           if (!this.local_storage.parsed.version || this.local_storage.parsed.version < 2) {
-            this.local_storage.parsed = {"version": 2};
-            console.log("Reindexing for v2...");
+            // Migrate from browser localStorage on first load
+            this.cmd("wrapperGetLocalStorage", [], (old_storage) => {
+              if (old_storage && old_storage.read && Object.keys(old_storage.read).length > 0) {
+                console.log("Migrating read state from localStorage to userSettings...");
+                this.local_storage.read = old_storage.read;
+                if (old_storage.deleted) this.local_storage.deleted = old_storage.deleted;
+                this.local_storage.parsed = {"version": 2};
+                this.saveLocalStorage();
+                // Clear old localStorage
+                this.cmd("wrapperSetLocalStorage", {});
+              } else {
+                this.local_storage.parsed = {"version": 2};
+              }
+              this.on_local_storage.resolve(this.local_storage);
+            });
+            return;
           }
 
           this.on_local_storage.resolve(this.local_storage);
@@ -83,8 +99,12 @@
 
     saveLocalStorage(cb) {
       if (this.local_storage) {
-        this.cmd("wrapperSetLocalStorage", this.local_storage, function(res) {
-          if (cb) cb(res);
+        this.cmd("userGetSettings", [], (settings) => {
+          settings = settings || {};
+          settings.mail = this.local_storage;
+          this.cmd("userSetSettings", [settings], function(res) {
+            if (cb) cb(res);
+          });
         });
       }
     }
@@ -93,6 +113,7 @@
       this.cmd("siteInfo", {}, (site_info) => {
         this.setSiteInfo(site_info);
         this.registerFeedFollows();
+        this.registerNotifications();
       });
       this.cmd("serverInfo", {}, (server_info) => {
         this.setServerInfo(server_info);
@@ -104,11 +125,42 @@
       if (!my_xid_dir) return;
       var feeds = {
         "New conversations": [
-          "SELECT 'message' AS type, MAX(conversation.established) AS date_added, 'Encrypted conversation' AS title, 'New conversation with ' || REPLACE(json.directory, 'data/users/', '') AS body, '' AS url FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.established > 0 AND conversation.peer_xid = '" + my_xid_dir + "' AND json.directory != 'data/users/" + my_xid_dir + "' GROUP BY json.directory",
+          "SELECT 'message' AS type, MAX(conversation.established) AS date_added, 'Encrypted conversation' AS title, 'New conversation with ' || json.directory AS body, '' AS url FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.established > 0 AND conversation.peer_xid = '" + my_xid_dir + "' AND json.directory != '" + my_xid_dir + "' GROUP BY json.directory",
           [""]
         ]
       };
       this.cmd("feedFollow", [feeds]);
+    }
+
+    registerNotifications() {
+      var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
+      if (!my_xid_dir) return;
+      var notifications = {
+        "new_conversations": [
+          "SELECT SUM(conversation.my_seq) AS count FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.peer_xid = '" + my_xid_dir + "' AND json.directory != '" + my_xid_dir + "'",
+          []
+        ]
+      };
+      this.cmd("notificationSubscribe", [notifications]);
+    }
+
+    // Snapshot the current SUM(my_seq) into private user settings so the
+    // notification plugin can subtract it as a "seen" baseline.
+    snapshotNotificationBaseline() {
+      var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
+      if (!my_xid_dir) return;
+      var query = "SELECT SUM(conversation.my_seq) AS total FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.peer_xid = '" + my_xid_dir + "' AND json.directory != '" + my_xid_dir + "'";
+      this.cmd("dbQuery", [query], (rows) => {
+        var total = (rows && rows[0] && rows[0].total) || 0;
+        // saveLocalStorage already does userGetSettings/userSetSettings,
+        // but we need notification_seen at the top level, not inside mail
+        this.cmd("userGetSettings", [], (settings) => {
+          settings = settings || {};
+          if (!settings.notification_seen) settings.notification_seen = {};
+          settings.notification_seen.new_conversations = total;
+          this.cmd("userSetSettings", [settings]);
+        });
+      });
     }
 
     onRequest(cmd, message) {

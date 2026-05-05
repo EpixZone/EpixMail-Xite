@@ -36,33 +36,7 @@
       return null;
     }
 
-    getConversationId(peer_xid, cb) {
-      var my_xid = this.getMyXid();
-      if (!my_xid) return cb(null);
-      Crypto.getConversationId(my_xid, peer_xid, cb);
-    }
-
-    getConversation(peer_xid, cb) {
-      this.getConversationId(peer_xid, (conv_id) => {
-        if (!conv_id) return cb(null);
-        if (!this.data.conversations) {
-          this.data.conversations = {};
-        }
-        if (this.data.conversations[conv_id]) {
-          return cb(this.data.conversations[conv_id], conv_id);
-        }
-        var conv = {
-          peer_xid: peer_xid,
-          established: Date.now(),
-          my_seq: 0,
-          messages: {}
-        };
-        this.data.conversations[conv_id] = conv;
-        cb(conv, conv_id);
-      });
-    }
-
-    // Get or create conversation only after message is ready — avoids persisting empty conversations on send failure
+    // Get or create conversation — conv_id is either provided (reply) or generated (new)
     getOrCreateConversation(peer_xid, conv_id) {
       if (!this.data.conversations) {
         this.data.conversations = {};
@@ -89,49 +63,49 @@
       cb(result);
     }
 
-    sendMessage(peer_xid, subject, body, cb) {
-      var my_xid = this.getMyXid();
+    sendMessage(peer_xid, subject, body, conv_id, cb) {
+      var my_xid = Crypto.normalizeXid(this.getMyXid());
       if (!my_xid) return cb(false);
-      this.getConversationId(peer_xid, (conv_id) => {
-        if (!conv_id) return cb(false);
-        Crypto.resolveAllPubkeys(peer_xid, (recipient_pubkeys, err) => {
-          if (isEmpty(recipient_pubkeys)) {
-            Page.cmd("wrapperNotification", ["error", err || "Could not find encryption keys for " + peer_xid]);
-            return cb(false);
+      // New message: generate random conv_id; reply: reuse provided conv_id
+      if (!conv_id) {
+        conv_id = Crypto.generateConversationId();
+      }
+      Crypto.resolveAllPubkeys(peer_xid, (recipient_pubkeys, err) => {
+        if (isEmpty(recipient_pubkeys)) {
+          Page.cmd("wrapperNotification", ["error", err || "Could not find encryption keys for " + peer_xid]);
+          return cb(false);
+        }
+        this.getSenderPubkeys((sender_pubkeys) => {
+          var all_pubkeys = {};
+          for (var xid in recipient_pubkeys) {
+            all_pubkeys[xid] = recipient_pubkeys[xid];
           }
-          this.getSenderPubkeys((sender_pubkeys) => {
-            var all_pubkeys = {};
-            for (var xid in recipient_pubkeys) {
-              all_pubkeys[xid] = recipient_pubkeys[xid];
+          for (var sxid in sender_pubkeys) {
+            all_pubkeys[sxid] = sender_pubkeys[sxid];
+          }
+          var msg = JSON.stringify({subject: subject, body: body});
+          Crypto.encryptForAll(msg, all_pubkeys, (ct) => {
+            if (isEmpty(ct)) {
+              Page.cmd("wrapperNotification", ["error", "Encryption failed"]);
+              return cb(false);
             }
-            for (var sxid in sender_pubkeys) {
-              all_pubkeys[sxid] = sender_pubkeys[sxid];
-            }
-            var msg = JSON.stringify({subject: subject, body: body});
-            Crypto.encryptForAll(msg, all_pubkeys, (ct) => {
-              if (isEmpty(ct)) {
-                Page.cmd("wrapperNotification", ["error", "Encryption failed"]);
+            Crypto.signMessage(msg, (sig) => {
+              if (!sig) {
+                Page.cmd("wrapperNotification", ["error", "Signing failed"]);
                 return cb(false);
               }
-              Crypto.signMessage(msg, (sig) => {
-                if (!sig) {
-                  Page.cmd("wrapperNotification", ["error", "Signing failed"]);
-                  return cb(false);
-                }
-                // Only create/persist the conversation after encryption + signing succeed
-                var conv = this.getOrCreateConversation(peer_xid, conv_id);
-                conv.my_seq += 1;
-                var ts = Date.now();
-                conv.messages[ts.toString()] = {
-                  seq: conv.my_seq,
-                  from_xid: my_xid,
-                  ct: ct,
-                  sig: sig,
-                  ts: ts
-                };
-                this.saveData().then((res) => {
-                  cb(res);
-                });
+              var conv = this.getOrCreateConversation(peer_xid, conv_id);
+              conv.my_seq += 1;
+              var ts = Date.now();
+              conv.messages[ts.toString()] = {
+                seq: conv.my_seq,
+                from_xid: my_xid,
+                ct: ct,
+                sig: sig,
+                ts: ts
+              };
+              this.saveData().then((res) => {
+                cb(res);
               });
             });
           });

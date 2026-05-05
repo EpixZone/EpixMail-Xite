@@ -134,8 +134,8 @@
             if (plaintext) {
               try {
                 var parsed = JSON.parse(plaintext);
-                var my_xid = Page.user.getMyXid();
-                var is_sent = (raw.from_xid === my_xid);
+                var my_xid = Crypto.normalizeXid(Page.user.getMyXid());
+                var is_sent = (Crypto.normalizeXid(raw.from_xid) === my_xid);
                 var message_row = {
                   subject: parsed.subject || "",
                   body: parsed.body || "",
@@ -169,8 +169,33 @@
       var deleted = (Page.local_storage && Page.local_storage.deleted) || [];
       message_rows = message_rows.filter(function(row) { return deleted.indexOf(row.message_id) === -1; });
 
-      this.syncMessages(message_rows);
-      this.has_more = limit && message_rows.length > limit && !this.nolimit_loaded;
+      // Group messages into threads by conv_id
+      var threads = {};
+      for (var i = 0; i < message_rows.length; i++) {
+        var row = message_rows[i];
+        var cid = row.conv_id;
+        if (!threads[cid]) threads[cid] = [];
+        threads[cid].push(row);
+      }
+
+      // Build thread list: one entry per conversation using the latest message
+      var thread_rows = [];
+      for (var cid in threads) {
+        var msgs = threads[cid];
+        // Sort oldest first within thread
+        msgs.sort(function(a, b) { return a.date_added - b.date_added; });
+        // Use the latest message as the list entry
+        var latest = msgs[msgs.length - 1];
+        latest.thread_messages = msgs;
+        latest.thread_count = msgs.length;
+        thread_rows.push(latest);
+      }
+
+      // Sort threads by latest message date (newest first)
+      thread_rows.sort(function(a, b) { return b.date_added - a.date_added; });
+
+      this.syncMessages(thread_rows);
+      this.has_more = limit && thread_rows.length > limit && !this.nolimit_loaded;
       Page.projector.scheduleRender();
       cb(message_rows);
     }
@@ -195,6 +220,7 @@
           Page.saveLocalStorage();
           this.loading = false;
           this.loaded = true;
+          Page.snapshotNotificationBaseline();
           Page.projector.scheduleRender();
         });
       });
@@ -202,8 +228,13 @@
 
     deleteMessage(message) {
       super.deleteMessage(message);
-      if (Page.local_storage.deleted.indexOf(message.row.message_id) === -1) {
-        Page.local_storage.deleted.push(message.row.message_id);
+      // Delete all messages in the thread
+      var thread_msgs = message.row.thread_messages || [message.row];
+      for (var i = 0; i < thread_msgs.length; i++) {
+        var mid = thread_msgs[i].message_id;
+        if (mid && Page.local_storage.deleted.indexOf(mid) === -1) {
+          Page.local_storage.deleted.push(mid);
+        }
       }
     }
 

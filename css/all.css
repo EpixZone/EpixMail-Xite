@@ -219,6 +219,24 @@ h5, h6 { font-weight: normal; color: #999 }
   100% { opacity: 0 }
 }
 
+/* Thread view */
+.MessageList .Message .subject .thread-count { color: #999; font-weight: normal; font-size: 80% }
+.MessageShow .thread-subject { font-size: 210%; font-weight: lighter; margin-bottom: 15px }
+.MessageShow .thread-subject .thread-with { color: #999; font-size: 50%; font-weight: normal }
+.MessageShow .thread-messages { border-top: 1px solid #F1F4F8 }
+.MessageShow .thread-message { padding: 20px 0; border-bottom: 1px solid #F1F4F8 }
+.MessageShow .thread-message.mine { background-color: #FAFCFF; margin: 0 -50px; padding: 20px 50px }
+.MessageShow .thread-header { margin-bottom: 10px }
+.MessageShow .thread-sender { font-weight: bold; color: #333 }
+.MessageShow .thread-message.mine .thread-sender { color: #4A90D9 }
+.MessageShow .thread-time { color: #999; font-size: 80%; margin-left: 10px }
+.MessageShow .thread-body { line-height: 1.5em; color: #111; font-family: monospace; font-size: 16px; word-wrap: break-word }
+.MessageShow .thread-body blockquote { border-left: 5px solid #eee; padding: 5px; padding-left: 15px; margin: 10px 0px; background-color: #FBFBFB }
+.MessageShow .thread-body blockquote p { margin: 0px; font-size: 90% }
+.MessageShow .thread-body pre, .MessageShow .thread-body code {
+	background-color: #FBFBFB; padding: 3px 4px; border: solid 1px #e1e4e5; font-family: Consolas, Monaco, monospace; font-size: 13px; overflow-x: auto;
+}
+
 
 /* ---- data/1MaiL5gfBM1cyb4a8e3iiL8L5gXmoAJu27/css/dark.css ---- */
 
@@ -345,6 +363,17 @@ h5, h6 { font-weight: normal; color: #999 }
 .theme-dark .MessageCreate input:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0 1000px #16181C inset;
     -webkit-text-fill-color: #E0E0E0;
+}
+
+.theme-dark .MessageShow .thread-subject { color: #E1E1E1 }
+.theme-dark .MessageShow .thread-messages { border-top-color: #0D0E10 }
+.theme-dark .MessageShow .thread-message { border-bottom-color: #0D0E10 }
+.theme-dark .MessageShow .thread-message.mine { background-color: #1A1D22; margin: 0 -50px; padding: 20px 50px }
+.theme-dark .MessageShow .thread-sender { color: #C0C0C0 }
+.theme-dark .MessageShow .thread-message.mine .thread-sender { color: #74BBFE }
+.theme-dark .MessageShow .thread-body { color: #E1E1E1 }
+.theme-dark .MessageShow .thread-body pre, .theme-dark .MessageShow .thread-body code {
+    background-color: #0D0E10; border-color: #0A0A0A; color: #D3D3D3;
 }
 
 

@@ -4,7 +4,7 @@
  "background-color": "#F2F4F6",
  "background-color-dark": "#26242E",
  "description": "End-to-end encrypted P2P messaging",
- "epixnet_version": "0.1.0",
+ "epixnet_version": "0.2.0",
  "favicon": "epixme.ico",
  "files": {
   "LICENSE": {
@@ -16,8 +16,8 @@
    "size": 2135
   },
   "css/all.css": {
-   "sha512": "e6e7fd8b87f102acb9b4c5bac3c61decf9ab0fc369f1db3eaed24ee7ac3a7d5e",
-   "size": 166142
+   "sha512": "af3045b74e2ab5b1cd6b2ae3d4e7d05da7c66e12a894525a7a17c293c6a2ebac",
+   "size": 168191
   },
   "data-default/users/content-default.json": {
    "sha512": "8cb251bbd5a19e295ccd9caa8e1846bea3b55c8dd20d7a5095d645366c6ba33f",
@@ -36,36 +36,36 @@
    "size": 2283
   },
   "js/EpixMail.js": {
-   "sha512": "be10f3954ff7adea87d4b9f1e86585bb6b6255d7bfc427a6430d12ae34d700ce",
-   "size": 5365
+   "sha512": "a876705d4f1fc92bbb165a7c9ed1ca557cf5c4b8c77d38e4c491fd078dc3c2b1",
+   "size": 7877
   },
   "js/Leftbar.js": {
-   "sha512": "e260b492afcc134ad22cbc87e8d4a38b3f735afc884dc28eb1e141d279e326a1",
-   "size": 4046
+   "sha512": "34014d6d87e354bfe695adf31225dd717ae4d7796fc7be2a8a54e2f721702bbc",
+   "size": 4137
   },
   "js/Message.js": {
-   "sha512": "cecd99d32c8e6df52f2c71f5f619d67daf4d29c7d35fe30dcceb7d871bc95351",
-   "size": 5642
+   "sha512": "10cd9a413c47555acfc796b86c18f8ac2f89daae71d94e68c30bf132d8442fd3",
+   "size": 8560
   },
   "js/MessageCreate.js": {
-   "sha512": "803f171eab6039e01e6add0e24e2d006b94563cf87db84ace190c95294b933c3",
-   "size": 8043
+   "sha512": "91f468d96a5cfd4fac5977ccfb2db765e9e3747f605c41dac212f081c78dcb7b",
+   "size": 9827
   },
   "js/MessageList.js": {
    "sha512": "e46e7bc18a023a3168dba477dd46cfc8013dcfd27ff31fada8dd5e70412e00f1",
    "size": 3495
   },
   "js/MessageListInbox.js": {
-   "sha512": "2e99262df557a7d667e60b7b21e1cc6a9ded45f16f79a5e77e162418082bc579",
-   "size": 7698
+   "sha512": "ad7e2eb2e5984eec04b9934e78b979ec0b0a952096e694df124587976e323372",
+   "size": 8912
   },
   "js/MessageListSent.js": {
-   "sha512": "63f6f527c8b4bdeb6b88f7b2da87a4f245169e1416b3cf964b580bc735949918",
-   "size": 5343
+   "sha512": "251113c70c7a9fae142445a58cb99843584a627f751ded5e1f3dc54b470766a9",
+   "size": 5385
   },
   "js/MessageLists.js": {
-   "sha512": "502db2f3807402ef07dee5ab0d614fe5ba409a778b542abac2920a7e330c84d9",
-   "size": 862
+   "sha512": "68d6f11f38e8517f5996478e307649f1cf41777da9a6b0e940fd299e7934ba66",
+   "size": 973
   },
   "js/MessageShow.js": {
    "sha512": "53beed42359ea677fd175635eb683b5dc2a4d6c89f72dd4a245795cbd4456762",
@@ -76,8 +76,8 @@
    "size": 4844
   },
   "js/User.js": {
-   "sha512": "8f67ed655563593c92980624ef830768ed9f6380ada229f05000d20cbfc8d748",
-   "size": 9390
+   "sha512": "3ab211abd922a46c51a1998f333695405194f6907781002097d8063dd62da9d4",
+   "size": 8527
   },
   "js/Users.js": {
    "sha512": "ee4eef0edc1870d2259d25520b3305eb48dcadc7ea39cbf74a3c6166c5cc8a02",
@@ -108,8 +108,8 @@
    "size": 4156
   },
   "js/utils/Crypto.js": {
-   "sha512": "a108f7b54f41bea2f9a5220e17715d315034c251c2705a37a5838b6c3fd30555",
-   "size": 4191
+   "sha512": "fa29770ea8a16fbd1abcd71f603f5de65faff3d8c3d7b9626f8705df9bcd806d",
+   "size": 4164
   },
   "js/utils/Deferred.js": {
    "sha512": "c75c1e14b75552665ce0f65b2c7bc1fed1b23cb0ee9fd61d92de6de0121cd8e8",
@@ -192,10 +192,10 @@
   }
  },
  "inner_path": "content.json",
- "modified": 1775417707,
+ "modified": 1776306440,
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
- "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HESOszvrPOf3cK+Quj0r904PKiuLB7qMrkUx7sYqx8sjA84adxrTHtgIW/7T5ANUraABsJdjrFv/SsvByBc2+AE="},
+ "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HMiRbI60QdOtCb14Y7EdYrKYYWPfNo6PziYZ8ltYJ2lUB9teNovH0QnWiwoAzwmjrh7HbNFQlZRf/I4xyjD3LBk="},
  "signs_required": 1,
  "title": "Epix Mail",
  "translate": ["js/EpixMail.js","js/Leftbar.js","js/StartScreen.js","js/MessageCreate.js","js/MessageList.js","js/MessageShow.js","js/User.js","js/utils/Crypto.js"],
