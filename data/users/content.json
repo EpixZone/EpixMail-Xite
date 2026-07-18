@@ -12,7 +12,7 @@
   "permission_rules": {
    ".*": {
     "files_allowed": "data.json",
-    "max_size": 200000
+    "max_size": 1000000
    }
   },
   "permissions": {}

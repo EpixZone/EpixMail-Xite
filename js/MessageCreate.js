@@ -1,25 +1,49 @@
 (function() {
 
+  // Compose modal: To-chips for one or many recipients, subject, body and
+  // the signature "Encrypt & Send" scramble effect. Every chip is validated
+  // twice: the xID must exist on chain (xidResolveName) and the person must
+  // have published mail keys (their data.json on this xite).
   class MessageCreate {
     constructor() {
+      this.visible = false;
       this.subject = "";
       this.body = "";
-      this.minimized = true;
       this.sending = false;
       this.just_sent = false;
-      this.to_value = "";
-      this.to_valid = null;
-      this.to_checking = false;
-      this.reply_conv_id = null;
-      this._validate_seq = 0;
+      this.to_list = [];  // [{name, checking, valid, unreachable, reason, seq}]
+      this._chip_seq = 0;
       this.node = null;
-      this.handleTitleClick = this.handleTitleClick.bind(this);
       this.handleCloseClick = this.handleCloseClick.bind(this);
+      this.handleScrimClick = this.handleScrimClick.bind(this);
       this.handleInput = this.handleInput.bind(this);
-      this.handleToInput = this.handleToInput.bind(this);
-      this.handleToBlur = this.handleToBlur.bind(this);
       this.handleSendClick = this.handleSendClick.bind(this);
+      this.handleChipRemoveClick = this.handleChipRemoveClick.bind(this);
+      this.renderChip = this.renderChip.bind(this);
       this.setNode = this.setNode.bind(this);
+      this.autocomplete = new Autocomplete(
+        () => this.getContactNames(),
+        {placeholder: ""},
+        (value) => {
+          if (value) this.addRecipient(value);
+          this.autocomplete.attrs.value = "";
+        }
+      );
+      // Commit a chip on comma too, and pop the last chip on backspace in an
+      // empty field (the autocomplete's own handler keeps Enter/arrows)
+      var autocomplete_key = this.autocomplete.handleKey;
+      this.autocomplete.attrs.onkeydown = (e) => {
+        if (e.key === ",") {
+          this.autocomplete.handleBlur(e);
+          return false;
+        }
+        if (e.key === "Backspace" && !e.target.value && this.to_list.length > 0) {
+          this.to_list.pop();
+          Page.projector.scheduleRender();
+          return false;
+        }
+        return autocomplete_key(e);
+      };
     }
 
     stripTld(name) {
@@ -30,118 +54,133 @@
       return (name && !name.match(/\.epix$/i)) ? name + ".epix" : name;
     }
 
-    get to() {
-      return this.to_value;
-    }
-
-    set to(to) {
-      this.to_value = this.stripTld(to);
-      this.to_valid = null;
-      this.to_checking = false;
-      if (this.to_value) {
-        this.validateTo(this.withTld(this.to_value));
-      }
-      Page.projector.scheduleRender();
-    }
-
-    isEmpty() {
-      return !(this.body + this.subject + this.to);
-    }
-
-    isFilled() {
-      return (this.body !== "" && this.subject !== "" && this.to !== "" && this.to_valid === true && Page.user.publickey);
-    }
-
     setNode(node) {
       this.node = node;
     }
 
-    setReplyDetails() {
-      var current_message = Page.message_lists.message_active;
-      var my_xid = Crypto.normalizeXid(Page.user.getMyXid());
-      var from_xid = Crypto.normalizeXid(current_message.row.from_xid);
-      if (from_xid === my_xid) {
-        this.to = current_message.row.peer_xid;
-      } else {
-        this.to = current_message.row.from_xid;
+    getContactNames() {
+      var names = Page.thread_store.getContacts().map(this.stripTld);
+      var used = {};
+      for (var i = 0; i < this.to_list.length; i++) {
+        used[this.to_list[i].name] = true;
       }
-      this.reply_conv_id = current_message.row.conv_id;
-      this.subject = "Re: " + current_message.row.subject.replace("Re: ", "");
-    }
-
-    getTitle() {
-      var title;
-      if (this.just_sent) {
-        title = "Message sent!";
-      } else if (this.isEmpty()) {
-        if (Page.message_lists.message_active) {
-          title = "Reply to this message";
-        } else {
-          title = "New message";
-        }
-      } else {
-        if (this.subject.startsWith("Re:")) {
-          title = "Reply to message";
-        } else {
-          title = "New message";
-        }
-      }
-      return title;
-    }
-
-    validateTo(xid_name) {
-      this.to_checking = true;
-      this._validate_seq += 1;
-      var seq = this._validate_seq;
-      Page.projector.scheduleRender();
-      Page.cmd("xidResolveName", [xid_name], (result) => {
-        if (seq !== this._validate_seq) return;
-        this.to_checking = false;
-        this.to_valid = !!(result && !result.error);
-        Page.projector.scheduleRender();
+      return names.filter(function(name) {
+        return !used[name];
       });
     }
 
+    addRecipient(name) {
+      name = this.stripTld((name || "").trim().replace(/,/g, ""));
+      if (!name) return;
+      for (var i = 0; i < this.to_list.length; i++) {
+        if (this.to_list[i].name === name) return;
+      }
+      var chip = {name: name, checking: true, valid: null, unreachable: false, reason: null, seq: ++this._chip_seq};
+      this.to_list.push(chip);
+      this.validateChip(chip);
+      Page.projector.scheduleRender();
+    }
+
+    // A published mail pubkey is the real requirement for sending (and
+    // proves the xID exists), so check it first; the chain lookup only runs
+    // when there are no keys, to tell a typo apart from someone who just
+    // hasn't opened Epix Mail yet. This keeps compose working when the
+    // chain resolver is unreachable.
+    validateChip(chip) {
+      var xid = this.withTld(chip.name);
+      var seq = chip.seq;
+      Crypto.resolveMemberPubkeys([xid], (pubkeys, missing) => {
+        if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
+        if (missing.length === 0) {
+          chip.checking = false;
+          chip.valid = true;
+          chip.unreachable = false;
+          chip.reason = null;
+          Page.projector.scheduleRender();
+          return;
+        }
+        Page.cmd("xidResolveName", [xid], (result) => {
+          if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
+          chip.checking = false;
+          if (result && !result.error) {
+            chip.valid = true;
+            chip.unreachable = true;
+            chip.reason = missing[0].reason;
+          } else {
+            chip.valid = false;
+            chip.unreachable = false;
+            chip.reason = missing[0].reason || _("xID not found");
+          }
+          Page.projector.scheduleRender();
+        });
+      });
+    }
+
+    handleChipRemoveClick(e) {
+      e.stopPropagation();
+      var name = e.currentTarget.attributes["data-name"].value;
+      this.to_list = this.to_list.filter(function(chip) {
+        return chip.name !== name;
+      });
+      Page.projector.scheduleRender();
+      return false;
+    }
+
+    isFilled() {
+      if (!this.body.trim() || this.to_list.length === 0 || !Page.user.publickey) return false;
+      for (var i = 0; i < this.to_list.length; i++) {
+        var chip = this.to_list[i];
+        if (chip.checking || chip.valid !== true || chip.unreachable) return false;
+      }
+      return true;
+    }
+
+    getTitle() {
+      if (this.just_sent) return _("Message sent!");
+      return _("New message");
+    }
+
     show(to, subject, body) {
-      if (to) this.to = to;
+      if (to) this.addRecipient(to);
       if (subject) this.subject = subject;
       if (body) this.body = body;
-      this.minimized = false;
-      document.body.classList.add("MessageCreate-opened");
-      if (!this.to) this.node.querySelector(".to").focus();
-      else if (!this.subject) this.node.querySelector(".subject").focus();
-      else if (!this.body) this.node.querySelector(".body").focus();
+      this.visible = true;
+      Page.projector.scheduleRender();
+      setTimeout(() => {
+        if (!this.node) return;
+        var input = this.node.querySelector(this.to_list.length === 0 ? ".to-chips input.to" : (!this.subject ? ".subject" : ".body"));
+        if (input) input.focus();
+      }, 100);
       return false;
     }
 
     hide() {
-      document.body.classList.remove("MessageCreate-opened");
-      this.minimized = true;
+      this.visible = false;
+      Page.projector.scheduleRender();
     }
 
-    handleTitleClick(e) {
-      e.cancelBubble = true;
-      if (this.minimized) {
-        if (this.isEmpty() && Page.message_lists.message_active) {
-          this.setReplyDetails();
-        }
-        this.show();
-      } else {
-        this.hide();
-      }
-      return false;
+    reset() {
+      this.to_list = [];
+      this.subject = "";
+      this.body = "";
+      this.autocomplete.attrs.value = "";
+      this.just_sent = false;
+      this.sending = false;
     }
 
     handleCloseClick(e) {
-      e.cancelBubble = true;
+      if (e) e.cancelBubble = true;
       this.hide();
-      this.to_value = "";
-      this.subject = "";
-      this.body = "";
-      this.to_valid = null;
-      this.to_checking = false;
-      this.reply_conv_id = null;
+      if (this.just_sent) this.reset();
       return false;
+    }
+
+    handleScrimClick(e) {
+      if (e.target === e.currentTarget) {
+        this.hide();
+        return false;
+      }
+      return true;
     }
 
     handleInput(e) {
@@ -149,140 +188,129 @@
       return false;
     }
 
-    handleToInput(e) {
-      this.to_value = this.stripTld(e.target.value);
-      this.to_valid = null;
-      this.to_checking = false;
-      this._validate_seq += 1;
-      return false;
-    }
-
-    handleToBlur(e) {
-      var value = this.stripTld(e.target.value.trim());
-      this.to_value = value;
-      if (value) {
-        this.validateTo(this.withTld(value));
-      } else {
-        this.to_valid = null;
-        this.to_checking = false;
+    handleSendClick() {
+      if (this.sending || this.just_sent) return false;
+      // Commit any half-typed recipient first
+      if (this.autocomplete.attrs.value) {
+        this.addRecipient(this.autocomplete.attrs.value);
+        this.autocomplete.attrs.value = "";
       }
-      Page.projector.scheduleRender();
-    }
-
-    handleSendClick(e) {
-      if (!this.to) {
-        this.node.querySelector(".to").focus();
+      if (!this.isFilled()) {
+        for (var i = 0; i < this.to_list.length; i++) {
+          var chip = this.to_list[i];
+          if (chip.valid === false || chip.unreachable) {
+            Page.cmd("wrapperNotification", ["error", chip.reason || (_("Can't send to") + " " + chip.name)]);
+            return false;
+          }
+          if (chip.checking) {
+            Page.cmd("wrapperNotification", ["info", _("Verifying xID name...")]);
+            return false;
+          }
+        }
         return false;
       }
-      var peer_xid = this.withTld(this.to);
-      if (this.to_valid === false) {
-        Page.cmd("wrapperNotification", ["error", "xID name '" + peer_xid + "' not found"]);
-        return false;
-      }
-      if (this.to_checking) {
-        Page.cmd("wrapperNotification", ["info", "Verifying xID name..."]);
-        return false;
-      }
-      Animation.scramble(this.node.querySelector(".to"));
+      // The encrypting effect: everything the user typed scrambles into
+      // Braille glyphs while the message is encrypted per recipient
       Animation.scramble(this.node.querySelector(".subject"));
       Animation.scramble(this.node.querySelector(".body"));
+      var chips = this.node.querySelectorAll(".chip-name");
+      for (var ci = 0; ci < chips.length; ci++) {
+        Animation.scrambleText(chips[ci]);
+      }
       this.sending = true;
-      this.log("Sending encrypted message to", peer_xid);
-      var sent_subject = this.subject;
-      var sent_body = this.body;
-      var was_reply = !!this.reply_conv_id;
-      Page.user.sendMessage(peer_xid, this.subject, this.body, this.reply_conv_id, (res) => {
+      var recipients = this.to_list.map((chip) => this.withTld(chip.name));
+      this.log("Sending encrypted message to", recipients.join(", "));
+      Page.user.sendMessage(recipients, this.subject, this.body, null, (res) => {
         this.sending = false;
         if (res) {
-          this.hide();
           this.just_sent = true;
-          if (was_reply && Page.message_lists.message_active) {
-            // Suppress the inbox reload triggered by saveData's file_done event
-            Page.message_lists._suppress_inbox_reload = true;
-            // Add sent message to the active thread in-place
-            var active = Page.message_lists.message_active;
-            if (active.row.thread_messages) {
-              var my_xid = Crypto.normalizeXid(Page.user.getMyXid());
-              var now = Date.now();
-              var sent_row = {
-                subject: sent_subject,
-                body: sent_body,
-                date_added: now,
-                key: "msg-sent-" + now,
-                message_id: "sent:" + now,
-                from_xid: my_xid,
-                peer_xid: peer_xid,
-                from: my_xid,
-                folder: "sent",
-                conv_id: active.row.conv_id
-              };
-              active.row.thread_messages.push(sent_row);
-              active.row.thread_count = active.row.thread_messages.length;
-              // Update the inbox list entry: bump date and preview so it moves to top
-              active.row.date_added = now;
-              active.row.body = sent_body;
-              active.row.subject = sent_subject;
-              active.row.from_xid = my_xid;
-              // Re-sort inbox messages so this thread moves to the top
-              var inbox = Page.message_lists.inbox;
-              inbox.messages.sort(function(a, b) { return b.row.date_added - a.row.date_added; });
-            }
-            Page.projector.scheduleRender();
-          } else {
-            Page.message_lists.inbox.reload = true;
-          }
+          Page.thread_store.invalidate();
+          Page.thread_store.load("noanim");
           setTimeout(() => {
-            this.just_sent = false;
-            this.to_value = "";
-            this.subject = "";
-            this.body = "";
-            this.to_valid = null;
-            this.reply_conv_id = null;
-            Page.leftbar.reload_contacts = true;
-            Page.projector.scheduleRender();
-          }, 4000);
+            this.reset();
+            this.hide();
+          }, 2500);
         } else {
-          this.node.querySelector(".to").value = this.to;
-          this.node.querySelector(".subject").value = this.subject;
-          this.node.querySelector(".body").value = this.body;
+          // Restore the scrambled fields from state. The scramble mutated the
+          // DOM (input values and chip textContent) outside maquette, and the
+          // vdom text is unchanged, so maquette won't repair it - restore by
+          // hand.
+          if (this.node) {
+            this.node.querySelector(".subject").value = this.subject;
+            this.node.querySelector(".body").value = this.body;
+            var chip_els = this.node.querySelectorAll(".chip-name");
+            for (var i = 0; i < chip_els.length && i < this.to_list.length; i++) {
+              chip_els[i].textContent = this.to_list[i].name;
+            }
+          }
         }
+        Page.projector.scheduleRender();
       });
       return false;
     }
 
-    render() {
-      var to_status = null;
-      if (this.to_checking) {
-        to_status = h("span.to-status.checking", [h("span.spinner"), " .epix"]);
-      } else if (this.to_valid === true) {
-        to_status = h("span.to-status.valid", [".epix \u2713"]);
-      } else if (this.to_valid === false) {
-        to_status = h("span.to-status.invalid", [".epix \u2717"]);
-      } else {
-        to_status = h("span.to-suffix", [".epix"]);
-      }
-
-      return h("div.MessageCreate", {classes: { minimized: this.minimized, empty: this.isEmpty(), sent: this.just_sent}, afterCreate: this.setNode}, [
-        h("a.titlebar", {"href": "#New+message", onclick: this.handleTitleClick}, [
-          h("span.text", [this.getTitle()]),
-          h("span.buttons", [
-            h("a.minimize", {href: "#Minimize", onclick: this.handleTitleClick}, ["_"]),
-            h("a.close", {href: "#Close", onclick: this.handleCloseClick}, ["\u00d7"])
-          ])
-        ]),
-        h("div.to-row", [
-          h("label.label-to", ["To:"]),
-          h("input.to", {type: "text", placeholder: "xID name (e.g. bob)", name: "to_value", value: this.to_value, oninput: this.handleToInput, onblur: this.handleToBlur}),
-          to_status
-        ]),
-        h("input.subject", {type: "text", placeholder: "Subject", name: "subject", value: this.subject, oninput: this.handleInput}),
-        h("textarea.body", {placeholder: "Message", name: "body", value: this.body, oninput: this.handleInput}),
-        h("a.button.button-submit.button-send", {href: "#Send", classes: {"disabled": !this.isFilled(), "loading": this.sending || this.just_sent}, onclick: this.handleSendClick}, ["Encrypt & Send message"])
+    renderChip(chip) {
+      return h("span.chip", {
+        key: "chip-" + chip.name,
+        title: chip.reason || this.withTld(chip.name),
+        classes: {
+          checking: chip.checking,
+          valid: chip.valid === true && !chip.unreachable,
+          invalid: chip.valid === false,
+          unreachable: chip.unreachable
+        }
+      }, [
+        h("span.chip-name", chip.name),
+        chip.checking ? h("span.spinner") : null,
+        chip.valid === false ? h("span.chip-err", _("not found")) : null,
+        chip.unreachable ? h("span.chip-err", _("no mail keys")) : null,
+        h("a.chip-x", {
+          href: "#Remove",
+          "data-name": chip.name,
+          onclick: this.handleChipRemoveClick
+        }, "×")
       ]);
     }
 
-    onSiteInfo(site_info) {
-      // placeholder for future use
+    render() {
+      if (!this.visible) return void 0;
+      this.autocomplete.attrs.placeholder = this.to_list.length === 0 ? _("xID name (e.g. bob)") : "";
+      return h("div.composer-scrim", {key: "compose", onclick: this.handleScrimClick}, [
+        h("div.composer-modal.MessageCreate", {classes: {sent: this.just_sent}, afterCreate: this.setNode}, [
+          h("div.composer-head", [
+            h("span.composer-title", this.getTitle()),
+            h("a.composer-close", {href: "#Close", title: _("Close"), onclick: this.handleCloseClick}, "×")
+          ]),
+          h("div.to-row", [
+            h("label.label-to", _("To:")),
+            h("div.to-chips", this.to_list.map(this.renderChip).concat([this.autocomplete.render()]))
+          ]),
+          h("input.subject", {
+            type: "text",
+            placeholder: _("Subject"),
+            name: "subject",
+            value: this.subject,
+            oninput: this.handleInput
+          }),
+          h("textarea.body", {
+            placeholder: _("Message"),
+            name: "body",
+            value: this.body,
+            oninput: this.handleInput
+          }),
+          h("div.composer-foot", [
+            h("span.encrypt-note", [
+              h("span.icon.icon-lock"),
+              _("End-to-end encrypted")
+            ]),
+            h("a.button.button-submit.button-send", {
+              href: "#Send",
+              classes: {disabled: !this.isFilled(), loading: this.sending || this.just_sent},
+              onclick: this.handleSendClick
+            }, _("Encrypt & Send"))
+          ])
+        ])
+      ]);
     }
   }
 

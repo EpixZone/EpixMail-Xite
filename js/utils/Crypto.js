@@ -26,7 +26,10 @@
         (function(xid) {
           var pubkey = pubkeys_by_xid[xid];
           Page.cmd("eciesEncrypt", [plaintext, pubkey], function(ciphertext) {
-            if (ciphertext) {
+            // The node returns command failures as a truthy {error: ...}
+            // object, so require a real string before storing it - a bad
+            // pubkey must not silently become an unreadable ciphertext.
+            if (typeof ciphertext === "string" && ciphertext) {
               ct[xid] = ciphertext;
             }
             remaining--;
@@ -82,24 +85,49 @@
     // Resolve encryption pubkey for an xID name from their Mail site data.json
     // User directories on Mail are named by xID (e.g. data/users/mud.epix/data.json)
     static resolveAllPubkeys(xid_name, cb) {
-      var inner_path = "data/users/" + xid_name + "/data.json";
-      Page.cmd("fileGet", {"inner_path": inner_path, "required": false}, function(data) {
-        if (!data) {
-          return cb({}, xid_name + " hasn't set up Epix Mail yet");
+      Crypto.resolveMemberPubkeys([xid_name], function(pubkeys, missing) {
+        if (missing.length > 0) {
+          return cb({}, missing[0].reason);
         }
-        try {
-          var parsed = JSON.parse(data);
-        } catch (e) {
-          return cb({}, "Could not read encryption keys for " + xid_name);
-        }
-        var pubkey = parsed && parsed.publickey;
-        if (!pubkey) {
-          return cb({}, xid_name + " hasn't generated encryption keys yet");
-        }
-        var result = {};
-        result[xid_name] = pubkey;
-        cb(result, null);
+        cb(pubkeys, null);
       });
+    }
+
+    // Resolve encryption pubkeys for a list of xID names. Local files only
+    // (required: false): a member whose data.json hasn't synced yet reports
+    // as missing, which is the right compose-time answer.
+    // cb(pubkeys_by_xid, missing) where missing = [{xid, reason}, ...]
+    static resolveMemberPubkeys(xids, cb) {
+      if (!xids || xids.length === 0) return cb({}, []);
+      var pubkeys = {};
+      var missing = [];
+      var remaining = xids.length;
+      for (var i = 0; i < xids.length; i++) {
+        (function(xid) {
+          var inner_path = "data/users/" + xid + "/data.json";
+          Page.cmd("fileGet", {"inner_path": inner_path, "required": false}, function(data) {
+            if (!data) {
+              missing.push({xid: xid, reason: xid + " hasn't set up Epix Mail yet"});
+            } else {
+              var parsed = null;
+              try {
+                parsed = JSON.parse(data);
+              } catch (e) {
+                parsed = null;
+              }
+              if (!parsed) {
+                missing.push({xid: xid, reason: "Could not read encryption keys for " + xid});
+              } else if (!parsed.publickey) {
+                missing.push({xid: xid, reason: xid + " hasn't generated encryption keys yet"});
+              } else {
+                pubkeys[xid] = parsed.publickey;
+              }
+            }
+            remaining--;
+            if (remaining === 0) cb(pubkeys, missing);
+          });
+        })(xids[i]);
+      }
     }
 
     // Find a user's publickey from their directory on the Mail site

@@ -9,7 +9,7 @@
 					"node": "conversations",
 					"table": "conversation",
 					"key_col": "conv_id",
-					"import_cols": ["peer_xid", "established", "my_seq"]
+					"import_cols": ["peer_xid", "members", "established", "my_seq"]
 				}
 			],
 			"to_keyvalue": ["publickey", "signed_prekey", "prekey_sig", "prekey_ts"]
@@ -23,6 +23,7 @@
 			"cols": [
 				["conv_id", "TEXT"],
 				["peer_xid", "TEXT"],
+				["members", "TEXT"],
 				["established", "INTEGER"],
 				["my_seq", "INTEGER"],
 				["json_id", "INTEGER REFERENCES json (json_id)"]
@@ -31,7 +32,7 @@
 				"CREATE UNIQUE INDEX conversation_key ON conversation(json_id, conv_id)",
 				"CREATE INDEX conversation_peer ON conversation(peer_xid)"
 			],
-			"schema_changed": 2
+			"schema_changed": 3
 		}
 	},
 	"feeds": {

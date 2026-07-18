@@ -125,6 +125,7 @@
           params[decodeURIComponent(key)] = decodeURIComponent(val);
         } else {
           params["url"] = decodeURIComponent(key);
+          params["urls"] = params["url"].split("/");
         }
       }
       return params;
@@ -137,7 +138,9 @@
       }
       for (var key in params) {
         var val = params[key];
-        if (!val || key === "url") continue;
+        // "urls" is the parsed path segments of "url", not a real query param;
+        // emitting it would rewrite a cleaned "?to=" URL into "?urls=".
+        if (!val || key === "url" || key === "urls") continue;
         back.push(encodeURIComponent(key) + "=" + encodeURIComponent(val));
       }
       return back.join("&");

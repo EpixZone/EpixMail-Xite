@@ -2,40 +2,30 @@
 
   class MessageLists {
     constructor() {
-      this.inbox = new MessageListInbox(this);
-      this.sent = new MessageListSent(this);
+      // Titles stay untranslated here; consumers wrap them in _() at render
+      // time (the language file loads after construction)
+      this.inbox = new MessageListThreads(this, "inbox", "Inbox");
+      this.starred = new MessageListThreads(this, "starred", "Starred");
+      this.archived = new MessageListThreads(this, "archived", "Archived");
+      this.junk = new MessageListThreads(this, "junk", "Junk");
+      this.sent = new MessageListSent(this, "sent", "Sent");
       this.active = this.inbox;
-      this.message_active = null;
-    }
-
-    getActive() {
-      return this.active;
+      this.search_query = "";
+      this.search_bar = new SearchBar(this);
     }
 
     setActive(name) {
-      this.active.deselectMessages();
-      this.active = this[name];
-      this.active.triggerLoad();
+      this.active = this[name] || this.inbox;
+      Page.thread_store.load();
       Page.projector.scheduleRender();
       return this.active;
     }
 
-    getActiveMessage() {
-      return this.getActive().message_active;
-    }
-
     render() {
-      return h("div.MessageLists", [this.active.render()]);
-    }
-
-    onSiteInfo(site_info) {
-      this.sent.reload = true;
-      if (this._suppress_inbox_reload) {
-        this._suppress_inbox_reload = false;
-      } else {
-        this.inbox.reload = true;
-      }
-      this.active.triggerLoad();
+      return h("div.MessageLists", [
+        this.search_bar.render(),
+        this.active.render()
+      ]);
     }
   }
 
