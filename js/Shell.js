@@ -7,6 +7,7 @@
       this.handleComposeClick = this.handleComposeClick.bind(this);
       this.handleAccountRailClick = this.handleAccountRailClick.bind(this);
       this.handleAccountTopClick = this.handleAccountTopClick.bind(this);
+      this.handleSettingsClick = this.handleSettingsClick.bind(this);
       this.handleFolderMenuClick = this.handleFolderMenuClick.bind(this);
       this.handleBackClick = this.handleBackClick.bind(this);
       this.renderNavItem = this.renderNavItem.bind(this);
@@ -30,9 +31,15 @@
       return false;
     }
 
+    handleSettingsClick() {
+      Page.navigate("?Settings");
+      return false;
+    }
+
     buildAccountMenu(menu) {
       menu.items = [];
       if (Page.site_info && Page.site_info.cert_user_id) {
+        menu.items.push([_("Settings"), this.handleSettingsClick]);
         menu.items.push([_("Switch account"), this.handleSelectUserClick]);
       } else {
         menu.items.push([_("Select account"), this.handleSelectUserClick]);
@@ -76,7 +83,7 @@
 
     isActive(id) {
       if (Page.view === "contacts") return id === "contacts";
-      if (Page.view === "thread") return false;
+      if (Page.view === "thread" || Page.view === "settings") return false;
       return Page.message_lists.active === Page.message_lists[id];
     }
 
@@ -111,6 +118,7 @@
     getTitle() {
       if (Page.view === "thread") return _("Conversation");
       if (Page.view === "contacts") return _("Contacts");
+      if (Page.view === "settings") return _("Settings");
       return _(Page.message_lists.active.title);
     }
 

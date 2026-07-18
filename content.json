@@ -204,6 +204,9 @@
  },
  "inner_path": "content.json",
  "modified": 1776306440,
+ "notification_icons": {
+  "new_conversations": "img/logo.svg"
+ },
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
  "signs": {

@@ -11,6 +11,7 @@
       this.read = this.isThreadRead();
       this.handleListClick = this.handleListClick.bind(this);
       this.handleStarClick = this.handleStarClick.bind(this);
+      this.handleReadToggleClick = this.handleReadToggleClick.bind(this);
       this.handleArchiveClick = this.handleArchiveClick.bind(this);
       this.handleJunkClick = this.handleJunkClick.bind(this);
       this.handleDeleteClick = this.handleDeleteClick.bind(this);
@@ -95,6 +96,18 @@
       return false;
     }
 
+    handleReadToggleClick(e) {
+      if (e) e.stopPropagation();
+      if (this.read) {
+        Page.thread_store.markThreadUnread(this.row);
+        this.read = false;
+      } else {
+        Page.thread_store.markThreadRead(this.row);
+        this.read = true;
+      }
+      return false;
+    }
+
     handleArchiveClick(e) {
       if (e) e.stopPropagation();
       Page.thread_store.setArchived(this.row.conv_id, this.row.folder !== "archived");
@@ -127,6 +140,12 @@
       var is_archived = this.row.folder === "archived";
       var is_junk = this.row.folder === "junk";
       return h("div.row-actions", [
+        h("a.icon", {
+          href: "#Read",
+          title: this.read ? _("Mark as unread") : _("Mark as read"),
+          classes: {"icon-mail-open": this.read, "icon-mail": !this.read},
+          onclick: this.handleReadToggleClick
+        }),
         h("a.icon.icon-archive", {
           href: "#Archive",
           title: is_archived ? _("Unarchive") : _("Archive"),

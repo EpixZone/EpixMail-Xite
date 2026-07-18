@@ -18,6 +18,7 @@
       this.handleBackClick = this.handleBackClick.bind(this);
       this.handleExpandClick = this.handleExpandClick.bind(this);
       this.handleStarClick = this.handleStarClick.bind(this);
+      this.handleUnreadClick = this.handleUnreadClick.bind(this);
       this.handleArchiveClick = this.handleArchiveClick.bind(this);
       this.handleJunkClick = this.handleJunkClick.bind(this);
       this.handleDeleteClick = this.handleDeleteClick.bind(this);
@@ -39,6 +40,9 @@
         this._body_renderers = {};
         this._tried_nolimit = false;
       }
+      // Re-evaluate the mark-read guard on every open, so reopening a thread
+      // that was manually marked unread (same conv, same count) marks it read.
+      this.marked_read = null;
       this.conv_id = conv_id;
       Page.thread_store.load();
     }
@@ -71,6 +75,19 @@
 
     handleStarClick() {
       Page.thread_store.toggleStar(this.conv_id);
+      return false;
+    }
+
+    // Gmail-style: marking the open conversation unread returns you to the
+    // list. Pinning marked_read stops the render below from re-marking it read
+    // in the same frame.
+    handleUnreadClick() {
+      var thread = this.getThread();
+      if (thread) {
+        this.marked_read = this.conv_id + ":" + thread.thread_count;
+        Page.thread_store.markThreadUnread(thread);
+        this.handleBackClick();
+      }
       return false;
     }
 
@@ -225,6 +242,11 @@
             h("div.thread-participants", names.join(", "))
           ]),
           h("div.thread-actions", [
+            h("a.icon.icon-mail", {
+              href: "#Unread",
+              title: _("Mark as unread"),
+              onclick: this.handleUnreadClick
+            }),
             h("a.icon", {
               href: "#Star",
               title: thread.starred ? _("Unstar") : _("Star"),
