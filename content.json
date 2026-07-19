@@ -5,6 +5,7 @@
  "background-color-dark": "#151517",
  "description": "End-to-end encrypted P2P mail with group conversations",
  "epixnet_version": "0.2.0",
+ "favicon": "img/favicon.ico",
  "files": {
   "LICENSE": {
    "sha512": "e67014a69caa38c58575f333619243c9ebb3c98d462f0b4823ff5ed3d2cfdba3",

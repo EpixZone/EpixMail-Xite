@@ -29,12 +29,14 @@
           this.autocomplete.attrs.value = "";
         }
       );
-      // Commit a chip on comma too, and pop the last chip on backspace in an
-      // empty field (the autocomplete's own handler keeps Enter/arrows)
+      // xIDs never contain a space or comma, so either one commits the typed
+      // name into a chip - that is how you add several recipients. Backspace in
+      // an empty field pops the last chip. (The autocomplete keeps Enter/arrows.)
       var autocomplete_key = this.autocomplete.handleKey;
       this.autocomplete.attrs.onkeydown = (e) => {
-        if (e.key === ",") {
-          this.autocomplete.handleBlur(e);
+        if (e.key === "," || e.key === " ") {
+          if (e.target.value.trim()) this.autocomplete.handleBlur(e);
+          if (e.preventDefault) e.preventDefault();
           return false;
         }
         if (e.key === "Backspace" && !e.target.value && this.to_list.length > 0) {
@@ -103,13 +105,16 @@
           if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
           chip.checking = false;
           if (result && !result.error) {
+            // Real xID on chain, but no published mail keys: they exist, they
+            // just haven't joined Epix Mail yet.
             chip.valid = true;
             chip.unreachable = true;
-            chip.reason = missing[0].reason;
+            chip.reason = this.withTld(chip.name) + " " + _("hasn't joined Epix Mail yet");
           } else {
+            // The name does not resolve on chain at all: not a real xID.
             chip.valid = false;
             chip.unreachable = false;
-            chip.reason = missing[0].reason || _("xID not found");
+            chip.reason = _("No registered xID named") + " " + this.withTld(chip.name);
           }
           Page.projector.scheduleRender();
         });
@@ -249,6 +254,24 @@
       return false;
     }
 
+    // A line under the To field: explains why send is blocked when a chip is
+    // bad, otherwise reminds that several people can be added.
+    renderToHint() {
+      var checking = false;
+      for (var i = 0; i < this.to_list.length; i++) {
+        var chip = this.to_list[i];
+        if (chip.checking) { checking = true; continue; }
+        if (chip.valid === false) {
+          return h("div.to-hint.error", this.withTld(chip.name) + " " + _("is not a registered xID, so it can't receive mail."));
+        }
+        if (chip.unreachable) {
+          return h("div.to-hint.warn", this.withTld(chip.name) + " " + _("hasn't joined Epix Mail yet, so there's no key to encrypt to. They need to open Epix Mail once first."));
+        }
+      }
+      if (checking) return h("div.to-hint", _("Checking xID..."));
+      return h("div.to-hint", _("Type an xID and press space to add. You can message several people at once."));
+    }
+
     renderChip(chip) {
       return h("span.chip", {
         key: "chip-" + chip.name,
@@ -262,8 +285,8 @@
       }, [
         h("span.chip-name", chip.name),
         chip.checking ? h("span.spinner") : null,
-        chip.valid === false ? h("span.chip-err", _("not found")) : null,
-        chip.unreachable ? h("span.chip-err", _("no mail keys")) : null,
+        chip.valid === false ? h("span.chip-err", _("no such xID")) : null,
+        chip.unreachable ? h("span.chip-err", _("not on Epix Mail")) : null,
         h("a.chip-x", {
           href: "#Remove",
           "data-name": chip.name,
@@ -285,6 +308,7 @@
             h("label.label-to", _("To:")),
             h("div.to-chips", this.to_list.map(this.renderChip).concat([this.autocomplete.render()]))
           ]),
+          this.renderToHint(),
           h("input.subject", {
             type: "text",
             placeholder: _("Subject"),

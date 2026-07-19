@@ -640,6 +640,9 @@ input:focus, textarea:focus { border-color: var(--epix-focus); outline: none }
 .chip-err { font-size: 11px; color: inherit; opacity: 0.8 }
 .chip-x { color: inherit; opacity: 0.6; font-size: 15px; line-height: 1; padding: 0 2px }
 .chip-x:hover { opacity: 1; text-decoration: none }
+.to-hint { font-size: 12px; color: var(--epix-text-low); margin: 6px 0 0 44px; line-height: 1.4 }
+.to-hint.warn { color: var(--epix-warning) }
+.to-hint.error { color: var(--epix-danger) }
 .Autocomplete { position: relative; flex: 1 1 120px; min-width: 120px }
 .Autocomplete input.to-input, .Autocomplete input.to {
 	border: none; background: none; padding: 5px 2px; width: 100%; font-size: 14px
