@@ -73,13 +73,17 @@
 
     handleInput(e) {
       this.attrs.value = e.target.value;
-      this.selected_index = 0;
+      // No auto-highlight: blur/Enter commits what was TYPED. The user must
+      // arrow into a suggestion to pick it. (Auto-selecting index 0 made it
+      // impossible to address a brand-new recipient, because blur then
+      // substituted the closest existing contact.)
+      this.selected_index = -1;
       this.focus = true;
     }
 
     handleKey(e) {
       if (e.keyCode === 38) {
-        this.selected_index = Math.max(0, this.selected_index - 1);
+        this.selected_index = Math.max(-1, this.selected_index - 1);
         return false;
       } else if (e.keyCode === 40) {
         this.selected_index = Math.min(this.values.length - 1, this.selected_index + 1);
@@ -102,21 +106,20 @@
     }
 
     handleFocus(e) {
-      this.selected_index = 0;
+      this.selected_index = -1;
       this.focus = true;
     }
 
     handleBlur(e) {
       var selected_value = this.node.querySelector(".values .value.selected");
       if (selected_value) {
+        // The user arrowed into a suggestion: commit that.
         this.setValue(selected_value.textContent);
       } else if (this.attrs.value) {
-        var values = this.filterValues(this.attrs.value);
-        if (values.length > 0) {
-          this.setValue(values[0].replace(/<.*?>/g, ""));
-        } else {
-          this.setValue("");
-        }
+        // Commit the raw typed value; the consumer validates it. (Was:
+        // substitute the closest existing contact, which silently changed the
+        // recipient and blocked composing to anyone new.)
+        this.setValue(this.attrs.value);
       } else {
         this.setValue("");
       }
@@ -124,8 +127,13 @@
     }
 
     render() {
+      // Fresh properties object each render: passing the same mutable object
+      // makes maquette's previousProperties === properties, so mutations like
+      // the placeholder would never reach the DOM.
+      var input_attrs = {};
+      for (var k in this.attrs) input_attrs[k] = this.attrs[k];
       return h("div.Autocomplete", {"afterCreate": this.setNode}, [
-        h("input.to", this.attrs),
+        h("input.to", input_attrs),
         (this.focus && this.attrs.value) ? h("div.values", {"exitAnimation": Animation.slideUp}, [
           this.filterValues(this.attrs.value).map((value, i) => {
             return h("a.value", {

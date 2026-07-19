@@ -1,107 +1,82 @@
 (function() {
 
+  // Onboarding hero shown until the visitor has an xID and mail keys.
+  // Two steps: choose your xID, then generate the encryption keypair that
+  // is published in your data.json so others can encrypt to you.
   class StartScreen {
     constructor() {
-      this.handleCertselect = this.handleCertselect.bind(this);
-      this.handleCreate = this.handleCreate.bind(this);
-      this.renderBody = this.renderBody.bind(this);
+      this.handleCtaClick = this.handleCtaClick.bind(this);
     }
 
-    addDots(s) {
-      return ".".repeat(18 - s.length) + s;
+    getState() {
+      var state = {};
+      state.cert = !!(Page.site_info && Page.site_info.cert_user_id);
+      state.loading = state.cert && !Page.user.inited;
+      state.keys = !!Page.user.publickey;
+      state.outdated = Page.server_info && Page.server_info.rev < 630;
+      return state;
     }
 
-    getTermLines() {
-      var lines = [];
-      var server_info = Page.server_info;
-      var site_info = Page.site_info;
-
-      var end_version = server_info.version + " r" + server_info.rev;
-      if (server_info.rev > 630) {
-        end_version += " [OK]";
-      } else {
-        end_version += " [FAIL]";
+    getStatus(state) {
+      if (state.loading) return _("Loading your identity...");
+      if (Page.site_info && Page.site_info.bad_files > 0 && Page.site_info.workers > 0) {
+        return _("Syncing encrypted mailboxes...");
       }
-
-      var end_sync;
-      if (site_info.bad_files === 0) {
-        end_sync = "[DONE]";
-      } else {
-        if (site_info.workers > 0) {
-          var percent = Math.round(100 - (site_info.bad_files / site_info.started_task_num) * 100);
-          end_sync = "[ " + percent + "%]";
-        } else {
-          end_sync = "[BAD:" + site_info.bad_files + "]";
-        }
-      }
-
-      lines.push("Checking EpixNet version......................." + this.addDots(end_version));
-      lines.push("Syncing encrypted mailboxes...................." + this.addDots(end_sync));
-      lines.push("Encryption protocol............................ECIES + ECDSA");
-      if (Page.site_info.cert_user_id && !Page.user.inited) {
-        lines.push("Checking current user's identity key...........[LOADING]");
-      } else {
-        lines.push("Checking current user's identity key...........[NOT FOUND]");
-      }
-      return lines.join("\n");
+      return null;
     }
 
-    handleCertselect() {
-      Page.cmd("certXid", [], function(result) {
-        Page.log("certXid result", result);
-      });
+    // One stable handler (maquette needs identical handler identity between
+    // renders), branching at click time
+    handleCtaClick() {
+      var state = this.getState();
+      if (!state.cert) {
+        Page.cmd("certXid", []);
+      } else if (state.keys === false && !state.loading) {
+        Page.user.createData();
+      }
       return false;
     }
 
-    handleCreate() {
-      Page.user.createData();
-      return false;
-    }
-
-    renderBody(node) {
-      node.innerHTML = Text.renderMarked(node.textContent, {"sanitize": true});
-    }
-
-    renderNocert() {
-      this.log("renderNocert");
-      return h("div.StartScreen.nocert", {"key": "nocert", "afterCreate": Animation.addVisibleClass, "exitAnimation": Animation.slideUp}, [
-        h("div.banner.term", {"afterCreate": Animation.termLines}, ["W E L C O M E   T O \n\n" + $("#banner").textContent + "\n\n\n"]),
-        (Page.server_info && Page.site_info)
-          ? h("div.term", {"afterCreate": Animation.termLines, "delay": 1, "delay_step": 0.2}, [this.getTermLines()])
-          : null,
-        (Page.server_info && Page.site_info)
-          ? (Page.server_info.rev < 630)
-            ? h("a.button.button-submit.button-certselect.disabled", {"href": "#Update", "afterCreate": Animation.show, "delay": 0, "style": "margin-left: -150px"}, ["Please update your EpixNet client!"])
-            : (!Page.site_info.cert_user_id)
-              ? h("a.button.button-submit.button-certselect", {"key": "certselect", "href": "#Select+username", "afterCreate": Animation.show, "delay": 1, onclick: this.handleCertselect}, ["Connect xID identity"])
-              : (Page.user.inited)
-                ? [
-                    h("div.term", {"key": "username-term", "afterCreate": Animation.termLines}, [
-                      "Connected identity: " + Page.site_info.cert_user_id + ".".repeat(Math.max(22 - Page.site_info.cert_user_id.length, 0)) + "...[GENERATING KEYS]"
-                    ]),
-                    h("a.button.button-submit.button-certselect", {"key": "create", "href": "#Create+data", "afterCreate": Animation.show, "delay": 1, onclick: this.handleCreate}, ["Generate encryption keys"])
-                  ]
-                : h("div.term", {"key": "loading-term", "afterCreate": Animation.termLines}, [
-                    "Connected identity: " + Page.site_info.cert_user_id + ".".repeat(Math.max(22 - Page.site_info.cert_user_id.length, 0)) + "...[LOADING]"
-                  ])
-          : null
+    renderStep(num, title, done, active) {
+      return h("div.onboarding-step", {
+        key: "step-" + num,
+        classes: {done: done, active: active, pending: !done && !active}
+      }, [
+        h("span.onboarding-step-marker", done ? "✓" : String(num)),
+        h("span.onboarding-step-title", title)
       ]);
     }
 
-    renderNomessage() {
-      this.log("renderNomessage");
-      return h("div.StartScreen.nomessage", {"key": "nomessage", "enterAnimation": Animation.slideDown}, [
-        h("div.subject", ["Encryption keys generated!"]),
-        h("div.from", [
-          "From: ",
-          h("a.username", {"href": "#"}, "epixmail")
-        ]),
-        h("div.body", {afterCreate: this.renderBody}, [
-          "Hello " + (Page.user.getMyXid() || "user") + "!\n\n" +
-          "Your end-to-end encryption keys have been generated. All messages you send and receive are encrypted with ECIES and signed with ECDSA for authentication.\n\n" +
-          "Anyone with an xID can send you encrypted messages that only you can read.\n\n" +
-          "_Best regards: Epix Mail_\n\n" +
-          "###### PS: Your encryption keys are derived from your xID identity. Keep your identity safe!"
+    render() {
+      var state = this.getState();
+      var status = this.getStatus(state);
+      var cta = null;
+      if (state.outdated) {
+        cta = h("a.button.button-submit.onboarding-cta.disabled", {href: "#Update"}, _("Please update your EpixNet client"));
+      } else if (!state.cert) {
+        cta = h("a.button.button-submit.onboarding-cta", {href: "#Get+started", onclick: this.handleCtaClick}, _("Choose your xID"));
+      } else if (!state.loading && !state.keys) {
+        cta = h("a.button.button-submit.onboarding-cta", {href: "#Generate", onclick: this.handleCtaClick}, _("Generate encryption keys"));
+      }
+      return h("div.StartScreen", {key: "start"}, [
+        h("div.onboarding", [
+          h("div.onboarding-head", [
+            h("img.onboarding-logo", {src: "img/logo.svg", alt: ""}),
+            h("h2.onboarding-title", _("Welcome to Epix Mail"))
+          ]),
+          h("p.onboarding-intro", [
+            _("End-to-end encrypted mail on a peer-to-peer network."), " ",
+            _("No servers, no accounts - just your xID.")
+          ]),
+          h("div.onboarding-steps", [
+            this.renderStep(1, _("Choose your xID"), state.cert, !state.cert),
+            this.renderStep(2, _("Generate encryption keys"), state.keys, state.cert && !state.keys)
+          ]),
+          status ? h("div.onboarding-status", [
+            h("span.spinner"),
+            h("span.onboarding-status-text", status)
+          ]) : null,
+          cta ? h("div.onboarding-actions", [cta]) : null
         ])
       ]);
     }
