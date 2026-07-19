@@ -22,6 +22,7 @@
       this.has_more = false;
       this.conv_limit = 20;       // threads decrypted per pass until "Load more"
       this.gen = 0;               // bumped on reset; an in-flight load bails if stale
+      this.newest_inbound_ts = 0; // high-water mark of inbound mail already seen
       this.on_loaded = new Deferred();
     }
 
@@ -41,6 +42,7 @@
       this.dirty = true;
       this.nolimit = false;
       this.has_more = false;
+      this.newest_inbound_ts = 0;
       this.on_loaded = new Deferred();
     }
 
@@ -234,12 +236,17 @@
       }
       this.decryptAll(to_decrypt, my_dir, () => {
         if (gen !== this.gen) return;
+        var was_loaded = this.loaded;
         this.buildThreads(conv_ids, by_conv, conv_members, my_xid, my_dir);
+        // Genuinely new inbound mail (past the high-water mark), for the
+        // OS/browser notification. Advances newest_inbound_ts either way, so
+        // the first (priming) pass never fires and reloads never double-fire.
+        var new_inbound = this.collectNewInbound(by_conv, my_xid);
         this.logEnd("loadThreads", conv_ids.length + " threads");
         this.loading = false;
         this.loaded = true;
         this.on_loaded.resolve();
-        Page.snapshotNotificationBaseline();
+        Page.onThreadsAssembled(new_inbound, was_loaded);
         this.resolveAvatars();
         Page.projector.scheduleRender();
         if (cb) cb(true);
@@ -285,6 +292,35 @@
       if (a.from_xid < b.from_xid) return -1;
       if (a.from_xid > b.from_xid) return 1;
       return (a.seq || 0) - (b.seq || 0);
+    }
+
+    // Inbound (not mine) messages newer than the high-water mark, decrypted.
+    // The mark advances past every inbound message seen this pass, so the
+    // first load primes it (nothing counts as "new") and a later "Load more"
+    // of older mail never counts either.
+    collectNewInbound(by_conv, my_xid) {
+      var found = [];
+      var max_ts = this.newest_inbound_ts;
+      for (var conv_id in by_conv) {
+        var raws = by_conv[conv_id];
+        for (var i = 0; i < raws.length; i++) {
+          var raw = raws[i];
+          if (Crypto.normalizeXid(raw.from_xid) === my_xid) continue;
+          if (raw.ts > max_ts) max_ts = raw.ts;
+          if (raw.ts <= this.newest_inbound_ts) continue;
+          var dec = this.decrypted_cache[this.msgKey(raw.conv_id, raw.from_xid, raw.ts)];
+          if (!dec) continue;
+          found.push({
+            conv_id: conv_id,
+            from_xid: raw.from_xid,
+            ts: raw.ts,
+            subject: dec.subject,
+            body: dec.body
+          });
+        }
+      }
+      this.newest_inbound_ts = max_ts;
+      return found;
     }
 
     buildThreads(conv_ids, by_conv, conv_members, my_xid, my_dir) {
@@ -426,6 +462,24 @@
         var msg = thread.thread_messages[i];
         if (msg.folder !== "sent" && !Page.local_storage.read[msg.date_added]) {
           Page.local_storage.read[msg.date_added] = true;
+          changed = true;
+        }
+      }
+      if (changed) {
+        Page.saveLocalStorage();
+        Page.projector.scheduleRender();
+      }
+    }
+
+    // Gmail-style "mark as unread": drop the read flag from every inbound
+    // message of the thread so the row goes bold again.
+    markThreadUnread(thread) {
+      if (!Page.local_storage || !Page.local_storage.read) return;
+      var changed = false;
+      for (var i = 0; i < thread.thread_messages.length; i++) {
+        var msg = thread.thread_messages[i];
+        if (msg.folder !== "sent" && Page.local_storage.read[msg.date_added]) {
+          delete Page.local_storage.read[msg.date_added];
           changed = true;
         }
       }

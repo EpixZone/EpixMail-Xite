@@ -14,6 +14,12 @@
       this.on_site_info = new Deferred();
       this.on_local_storage = new Deferred();
       this.local_storage = null;
+      this.notif_total = 0;          // cached SUM(my_seq), refreshed each assemble
+      this._last_notif_baseline = null;
+      this._web_notif_targets = {};  // web-notification id -> conv_id (for click)
+      this._web_notif_seq = 0;
+      this._notif_armed = false;     // gate pop-ups until the mailbox has primed
+      this._notif_arm_timer = null;
       this.user = new User();
       this.thread_store = new ThreadStore();
       this.reloadThreadsNoanim = this.reloadThreadsNoanim.bind(this);
@@ -30,6 +36,7 @@
       this.message_lists = new MessageLists();
       this.message_thread = new MessageThread();
       this.contacts_page = new ContactsPage();
+      this.settings_page = new SettingsPage();
       this.shell = new Shell();
       var start_url = base.href.indexOf("?") === -1 ? "" : base.href.replace(/.*?\?/, "");
       this.route(start_url);
@@ -66,6 +73,8 @@
         body = this.message_thread.render();
       } else if (this.view === "contacts") {
         body = this.contacts_page.render();
+      } else if (this.view === "settings") {
+        body = this.settings_page.render();
       } else {
         body = this.message_lists.render();
       }
@@ -101,6 +110,9 @@
       } else if (page === "Contacts") {
         this.view = "contacts";
         this.contacts_page.update();
+      } else if (page === "Settings") {
+        this.view = "settings";
+        this.settings_page.update();
       } else {
         this.view = "list";
         var folder = folders[page] || "inbox";
@@ -229,27 +241,42 @@
                 if (old_storage.deleted) this.local_storage.deleted = old_storage.deleted;
                 this.cmd("wrapperSetLocalStorage", {});
               }
-              this.migrateV3(true);
+              this.migrate(true);
               this.on_local_storage.resolve(this.local_storage);
             });
             return;
           }
-          this.migrateV3(this.local_storage.parsed.version < 3);
+          this.migrate(this.local_storage.parsed.version < 4);
           this.on_local_storage.resolve(this.local_storage);
         });
       });
     }
 
-    // v3 adds the folder state: archived/starred maps + junked sender list
-    migrateV3(save) {
+    // v3 added folder state (archived/starred/junk_senders); v4 adds the
+    // notification preferences. Seeding is idempotent, so this runs safely
+    // from any older version.
+    migrate(save) {
       if (!this.local_storage.archived) this.local_storage.archived = {};
       if (!this.local_storage.starred) this.local_storage.starred = {};
       if (!this.local_storage.junk_senders) this.local_storage.junk_senders = [];
-      if (this.local_storage.parsed.version !== 3) {
-        this.local_storage.parsed = {"version": 3};
+      if (this.local_storage.notifications === undefined) this.local_storage.notifications = true;
+      if (this.local_storage.desktop_notifications === undefined) this.local_storage.desktop_notifications = true;
+      if (this.local_storage.parsed.version !== 4) {
+        this.local_storage.parsed = {"version": 4};
         save = true;
       }
       if (save) this.saveLocalStorage();
+    }
+
+    // The node computes the dashboard/nav/tray count as SUM(my_seq) - baseline.
+    // Keeping baseline = total - unread makes that count equal the in-app
+    // unread thread count. When notifications are muted, baseline = total so
+    // the external count stays 0 (the in-app Inbox badge is unaffected).
+    notifBaseline() {
+      var total = this.notif_total || 0;
+      if (!this.local_storage || this.local_storage.notifications === false) return total;
+      var unread = (this.thread_store && this.thread_store.loaded) ? this.thread_store.unreadCount() : 0;
+      return Math.max(0, total - unread);
     }
 
     saveLocalStorage(cb) {
@@ -257,10 +284,18 @@
         this.cmd("userGetSettings", [], (settings) => {
           settings = settings || {};
           settings.mail = this.local_storage;
-          this.cmd("userSetSettings", [settings], function(res) {
+          if (!settings.notification_seen) settings.notification_seen = {};
+          var baseline = this.notifBaseline();
+          settings.notification_seen.new_conversations = baseline;
+          this.cmd("userSetSettings", [settings], (res) => {
+            // Only advance the guard once the write actually landed, so a
+            // dropped write doesn't make syncNotifBaseline skip the retry.
+            if (!res || !res.error) this._last_notif_baseline = baseline;
             if (cb) cb(res);
           });
         });
+      } else if (cb) {
+        cb();
       }
     }
 
@@ -310,21 +345,71 @@
       this.cmd("notificationSubscribe", [notifications]);
     }
 
-    // Snapshot the current SUM(my_seq) into private user settings so the
-    // notification plugin can subtract it as a "seen" baseline.
-    snapshotNotificationBaseline() {
+    // Refresh the cached inbound total (SUM of every peer's my_seq), which
+    // only changes when mail arrives.
+    refreshNotifTotal(cb) {
       var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
-      if (!my_xid_dir) return;
+      if (!my_xid_dir) { if (cb) cb(); return; }
       var query = "SELECT SUM(conversation.my_seq) AS total FROM conversation LEFT JOIN json USING (json_id) WHERE " + this.getConversationPredicate(my_xid_dir);
       this.cmd("dbQuery", [query], (rows) => {
-        var total = (rows && rows[0] && rows[0].total) || 0;
-        this.cmd("userGetSettings", [], (settings) => {
-          settings = settings || {};
-          if (!settings.notification_seen) settings.notification_seen = {};
-          settings.notification_seen.new_conversations = total;
-          this.cmd("userSetSettings", [settings]);
-        });
+        this.notif_total = (rows && rows[0] && rows[0].total) || 0;
+        if (cb) cb();
       });
+    }
+
+    // Persist the baseline only when it actually changed, so background loads
+    // that add nothing don't churn the settings file.
+    syncNotifBaseline() {
+      if (this.notifBaseline() !== this._last_notif_baseline) this.saveLocalStorage();
+    }
+
+    // Called after every thread assembly. Keeps the external count correct and
+    // fires an OS/browser notification for mail that arrived since last pass.
+    // The first pass primes the high-water mark; pop-ups stay disarmed for a
+    // few seconds after so a fresh device syncing an existing mailbox does not
+    // pop notifications for the backfill (this replaces a sender-timestamp
+    // recency window, which mis-fired under peer clock skew).
+    onThreadsAssembled(new_inbound, was_loaded) {
+      this.refreshNotifTotal(() => this.syncNotifBaseline());
+      if (!this._notif_armed && !this._notif_arm_timer) {
+        this._notif_arm_timer = setTimeout(() => {
+          this._notif_armed = true;
+          this._notif_arm_timer = null;
+        }, 8000);
+      }
+      if (this._notif_armed && new_inbound && new_inbound.length) this.notifyNewMail(new_inbound);
+    }
+
+    notifyNewMail(new_inbound) {
+      if (!this.local_storage || this.local_storage.notifications === false) return;
+      if (this.local_storage.desktop_notifications === false) return;
+      var store = this.thread_store;
+      // Inbox mail only: skip junk and archived conversations.
+      var fresh = new_inbound.filter(function(m) {
+        var thread = store.getThread(m.conv_id);
+        return thread && thread.folder === "inbox";
+      });
+      if (!fresh.length) return;
+      var latest = fresh[fresh.length - 1];
+      var sender = latest.from_xid ? latest.from_xid.replace(/\.[^.]+$/, "") : _("Someone");
+      var title, body;
+      if (fresh.length === 1) {
+        title = _("New message from") + " " + sender;
+        body = latest.subject || (latest.body || "").replace(/\s+/g, " ").substring(0, 120);
+      } else {
+        title = String(fresh.length) + " " + _("new messages");
+        body = _("Latest from") + " " + sender;
+      }
+      this.fireWebNotification(title, body, latest.conv_id);
+    }
+
+    // Ask the wrapper to show a real OS/browser notification. The wrapper
+    // handles the permission prompt itself and posts webNotificationClick back.
+    fireWebNotification(title, body, conv_id) {
+      this._web_notif_seq += 1;
+      var id = "mail-" + this._web_notif_seq;
+      this._web_notif_targets[id] = conv_id || null;
+      this.cmd("wrapperWebNotification", [title, id, {body: body, focus_tab: true}]);
     }
 
     onRequest(cmd, message) {
@@ -338,6 +423,14 @@
           (params.href && params.href.indexOf("?") !== -1 ? params.href.replace(/.*\?/, "") : "");
         this.history_state["url"] = url;
         this.route(url);
+      } else if (cmd === "webNotificationClick") {
+        // Clicking an OS/browser notification jumps to its conversation
+        var id = message.params && message.params.id;
+        var conv_id = id && this._web_notif_targets[id];
+        if (conv_id) {
+          delete this._web_notif_targets[id];
+          this.navigate("?Thread/" + conv_id);
+        }
       } else {
         this.log("Unknown command", cmd);
       }
@@ -356,6 +449,13 @@
         this.getLocalStorage();
         this.user.onSiteInfo(site_info);
         this.thread_store.reset();
+        // New identity: drop the previous account's cached notification state so
+        // a save before the first assemble can't persist a stale baseline, and
+        // re-arm the pop-up priming delay.
+        this.notif_total = 0;
+        this._last_notif_baseline = null;
+        this._notif_armed = false;
+        if (this._notif_arm_timer) { clearTimeout(this._notif_arm_timer); this._notif_arm_timer = null; }
         // The feed/notification queries key off xid_directory, which was empty
         // before an identity was chosen: (re-)register them now.
         this.registerFeedFollows();
