@@ -9,6 +9,10 @@
       this.my_xid = null;
       this.my_user_dir = null;
       this.quota_warned = false;
+      // True only once this.data reflects a real synced data.json (loaded from
+      // disk or just created by this user). Content writes are refused while it
+      // is false so a blank/default is never published over an unsynced file.
+      this.data_loaded_from_file = false;
 
       this.loading = false;
       this.inited = false;
@@ -110,6 +114,14 @@
     // encrypted once per member (recipients + self), so every member of the
     // conversation can read every reply.
     sendMessage(recipients, subject, body, conv_id, cb) {
+      // Refuse to publish over an unsynced mailbox before touching this.data.
+      this.guardContentWrite((may_write) => {
+        if (!may_write) return cb(false);
+        this._doSendMessage(recipients, subject, body, conv_id, cb);
+      });
+    }
+
+    _doSendMessage(recipients, subject, body, conv_id, cb) {
       var my_xid = Crypto.normalizeXid(this.getMyXid());
       if (!my_xid) return cb(false);
       if (typeof recipients === "string") recipients = [recipients];
@@ -216,6 +228,8 @@
           }
           this.data_size = this.getDataSize();
           this.publickey = this.data.publickey;
+          // this.data now mirrors the real synced file: content writes are safe.
+          this.data_loaded_from_file = true;
           this.loaded.resolve();
           if (cb) cb(true);
           this.inited = true;
@@ -275,10 +289,59 @@
 
     onDataCreated() {
       this.inited = true;
+      // First-time account creation is allowed to publish the fresh default,
+      // and after this write this.data is the canonical file for this user, so
+      // subsequent content writes must not be blocked by the sync guard.
+      this.data_loaded_from_file = true;
       this.loaded.resolve();
       Page.thread_store.invalidate();
       Page.thread_store.load();
       Page.projector.scheduleRender();
+    }
+
+    // Interim data-loss guard for content writes (send/delete). data.json is
+    // read LOCAL-only via fileGet(required:false); on a device that has not
+    // synced it, that read misses and this.data is null or a blank/default.
+    // Publishing then (last-writer-wins) would wipe the user's real mailbox
+    // everywhere. So before a content write, if this.data does not reflect a
+    // real synced file, trigger one sync + re-read: if the real file shows up
+    // use it (no clobber) and ask the user to retry; if it is still missing,
+    // refuse to write. Account creation does not come through here.
+    guardContentWrite(cb) {
+      // Fast path: data.json was loaded from disk or freshly created by this
+      // user - writing is safe. Preserve existing behavior exactly.
+      if (this.data_loaded_from_file) return cb(true);
+
+      var self = this;
+      var done = false;
+      var finish = function(proceed, notice) {
+        if (done) return;
+        done = true;
+        if (notice) Page.cmd("wrapperNotification", ["info", notice]);
+        cb(proceed);
+      };
+      // Never wedge a write forever if the sync command never calls back.
+      var timer = setTimeout(function() {
+        finish(false, _("Your data is still syncing, please try again in a moment."));
+      }, 12000);
+
+      var inner_path = this.getInnerPath();
+      // Ask peers for this specific file, then re-read it.
+      Page.cmd("fileNeed", {"inner_path": inner_path}, function() {
+        self.loadData(function(loaded) {
+          clearTimeout(timer);
+          if (loaded && self.data_loaded_from_file) {
+            // Real mailbox arrived: do not clobber it. The user's action was
+            // composed against empty data, so have them retry against the real
+            // data now loaded.
+            finish(false, _("Your mailbox just finished syncing - please try again."));
+          } else {
+            // Still no real file after a sync attempt: refuse to overwrite a
+            // possibly-existing remote file with a blank/default.
+            finish(false, _("Your data is still syncing, please try again in a moment."));
+          }
+        });
+      });
     }
 
     saveData(publish) {
@@ -334,6 +397,7 @@
       this.my_xid = null;
       this.my_user_dir = null;
       this.quota_warned = false;
+      this.data_loaded_from_file = false;
       this.loading = false;
       this.inited = false;
       this._load_start = Date.now();
