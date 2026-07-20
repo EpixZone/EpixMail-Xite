@@ -10,9 +10,20 @@
     "permission_rules": {
       ".*": {
         "files_allowed": "data.json",
-        "max_size": 1000000
+        "max_size": 1000000,
+        "merge_files": {
+          "messages.json": {"class": "epix-orset-1", "max_size": 3000000}
+        }
       }
     },
-    "permissions": {}
+    "permissions": {
+      ".*": {
+        "files_allowed": "data.json",
+        "max_size": 1000000,
+        "merge_files": {
+          "messages.json": {"class": "epix-orset-1", "max_size": 3000000}
+        }
+      }
+    }
   }
 }

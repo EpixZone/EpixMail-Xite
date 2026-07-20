@@ -113,11 +113,112 @@
       // correct instead of showing junked/deleted threads in the inbox.
       Deferred.when(Page.user.loaded, Page.on_local_storage).then(() => {
         if (gen !== this.gen) return;
-        // Discovery: every peer file whose conversation record names me,
-        // via legacy peer_xid or the members list (stored as JSON text, so
-        // the quoted LIKE is exact). json.directory is the bare xid dir.
+
+        var raw_by_key = {};
+        var conv_members = {};
+        var addRaw = (row) => {
+          var key = this.msgKey(row.conv_id, row.from_xid, row.ts);
+          var existing = raw_by_key[key];
+          if (!existing) {
+            raw_by_key[key] = row;
+          } else if (Crypto.normalizeXid(row.from_xid) === row.directory) {
+            // Duplicate copy of the same logical message (a signed record and
+            // its not-yet-stripped legacy twin): the author's own file wins.
+            raw_by_key[key] = row;
+          }
+        };
+        // Record a conversation's member list, preferring a canonical list
+        // (>= 2) over a self-only legacy fallback.
+        var noteMembers = (conv_id, members) => {
+          if (!members || !members.length) return;
+          if (!conv_members[conv_id] || (conv_members[conv_id].length < 2 && members.length >= 2)) {
+            conv_members[conv_id] = members;
+          }
+        };
+        // Legacy path: walk a whole user file's data.json.conversations.
+        // Catches conversations not yet migrated into messages.json (an old
+        // client, or a peer who hasn't reloaded). The gate is ct[my_dir] - a
+        // message encrypted to me belongs in my mailbox.
+        var collectFromFile = (directory, parsed) => {
+          var convs = parsed && parsed.conversations;
+          if (!convs) return;
+          for (var conv_id in convs) {
+            var conv = convs[conv_id];
+            if (!conv || !conv.messages) continue;
+            var members = null;
+            for (var ts in conv.messages) {
+              var msg = conv.messages[ts];
+              if (!msg || !msg.ct || !msg.ct[my_dir]) continue;
+              if (!members) {
+                members = this.parseMembers(conv, my_xid, directory);
+                noteMembers(conv_id, members);
+              }
+              addRaw({
+                conv_id: conv_id,
+                from_xid: msg.from_xid,
+                ct: msg.ct,
+                sig: msg.sig,
+                ts: parseInt(ts),
+                seq: msg.seq,
+                directory: directory
+              });
+            }
+          }
+        };
+        // New path: one signed-CRDT message row from the message table (my own
+        // messages.json + every migrated peer's, already folded to live winners
+        // so tombstones are gone). ct/members come back as JSON text.
+        var collectFromDbRow = (row) => {
+          var ct;
+          try { ct = typeof row.ct === "string" ? JSON.parse(row.ct) : row.ct; } catch (e) { ct = null; }
+          if (!ct || !ct[my_dir]) return;
+          if (row.members) {
+            var members;
+            try { members = typeof row.members === "string" ? JSON.parse(row.members) : row.members; } catch (e2) { members = null; }
+            noteMembers(row.conv_id, members);
+          }
+          addRaw({
+            conv_id: row.conv_id,
+            from_xid: row.from_xid,
+            ct: ct,
+            sig: row.sig,
+            ts: row.ts,
+            seq: row.seq,
+            directory: row.directory
+          });
+        };
+
+        // My own not-yet-migrated legacy messages (in memory).
+        collectFromFile(my_dir, Page.user.data);
+
+        var pending = 2;
+        var step = () => {
+          if (--pending > 0) return;
+          if (gen !== this.gen) return;
+          this.assemble(gen, raw_by_key, conv_members, my_xid, my_dir, cb);
+        };
+
+        // Source 1: signed-CRDT messages.json for me + every migrated peer.
+        // One query returns every message encrypted to me (the fold already
+        // dropped tombstones and superseded versions). This is the source of
+        // truth for all migrated/new mail; no per-peer file read needed.
+        var msgQuery = "SELECT message.*, json.directory FROM message LEFT JOIN json USING (json_id) WHERE message.ct LIKE ?";
+        Page.cmd("dbQuery", [msgQuery, ['%"' + my_dir + '"%']], (rows) => {
+          if (gen !== this.gen) { step(); return; }
+          if (rows && !rows.error) {
+            for (var i = 0; i < rows.length; i++) collectFromDbRow(rows[i]);
+          }
+          step();
+        });
+
+        // Source 2: legacy discovery + walk. Peers whose
+        // data.json.conversations still names me (old clients / pre-migration)
+        // are found via the conversation table, then their data.json is read
+        // directly. Overlap with source 1 (a migrated peer) is deduped by
+        // msgKey, so this only adds genuinely-unmigrated messages.
         var query = "SELECT conversation.conv_id, json.directory FROM conversation LEFT JOIN json USING (json_id) WHERE (conversation.peer_xid = ? OR conversation.members LIKE ?) AND json.directory != ? GROUP BY json.directory, conversation.conv_id";
         Page.cmd("dbQuery", [query, [my_dir, '%"' + my_dir + '"%', my_dir]], (conv_rows) => {
+          if (gen !== this.gen) { step(); return; }
           if (!conv_rows || conv_rows.error) conv_rows = [];
           var dirs = {};
           for (var i = 0; i < conv_rows.length; i++) {
@@ -125,67 +226,13 @@
               dirs[conv_rows[i].directory] = true;
             }
           }
-
-          var raw_by_key = {};
-          var conv_members = {};
-          var addRaw = (row) => {
-            var key = this.msgKey(row.conv_id, row.from_xid, row.ts);
-            var existing = raw_by_key[key];
-            if (!existing) {
-              raw_by_key[key] = row;
-            } else if (Crypto.normalizeXid(row.from_xid) === row.directory) {
-              // Duplicate copy of the same logical message: the author's own
-              // file is the authoritative one
-              raw_by_key[key] = row;
-            }
-          };
-          // Walk a whole user file: catches conversations the DB hasn't
-          // indexed yet. The real gate is ct[my_dir] - a message encrypted
-          // to me belongs in my mailbox.
-          var collectFromFile = (directory, parsed) => {
-            var convs = parsed && parsed.conversations;
-            if (!convs) return;
-            for (var conv_id in convs) {
-              var conv = convs[conv_id];
-              if (!conv || !conv.messages) continue;
-              var members = null;
-              for (var ts in conv.messages) {
-                var msg = conv.messages[ts];
-                if (!msg || !msg.ct || !msg.ct[my_dir]) continue;
-                if (!members) {
-                  members = this.parseMembers(conv, my_xid, directory);
-                  // A canonical members list (or one derived from a file that
-                  // names the peer) wins over a self-only legacy fallback
-                  if (!conv_members[conv_id] || (conv_members[conv_id].length < 2 && members.length >= 2)) {
-                    conv_members[conv_id] = members;
-                  }
-                }
-                addRaw({
-                  conv_id: conv_id,
-                  from_xid: msg.from_xid,
-                  ct: msg.ct,
-                  sig: msg.sig,
-                  ts: parseInt(ts),
-                  seq: msg.seq,
-                  directory: directory
-                });
-              }
-            }
-          };
-
-          collectFromFile(my_dir, Page.user.data);
-
           var dir_list = Object.keys(dirs);
           var remaining = dir_list.length;
-          var done = () => {
-            if (gen !== this.gen) return;
-            this.assemble(gen, raw_by_key, conv_members, my_xid, my_dir, cb);
-          };
-          if (remaining === 0) return done();
+          if (remaining === 0) { step(); return; }
           for (var di = 0; di < dir_list.length; di++) {
             ((directory) => {
               Page.cmd("fileGet", {"inner_path": "data/users/" + directory + "/data.json", "required": false}, (data) => {
-                if (gen !== this.gen) { remaining--; return; }
+                if (gen !== this.gen) { if (--remaining === 0) step(); return; }
                 if (data) {
                   try {
                     collectFromFile(directory, JSON.parse(data));
@@ -193,8 +240,7 @@
                     this.log("Failed to parse data.json for", directory);
                   }
                 }
-                remaining--;
-                if (remaining === 0) done();
+                if (--remaining === 0) step();
               });
             })(dir_list[di]);
           }
@@ -366,6 +412,7 @@
               members: members,
               msg_key: msg_key,
               message_id: message_id,
+              seq: raw.seq,
               subject: dec.subject,
               body: dec.body,
               date_added: raw.ts,
