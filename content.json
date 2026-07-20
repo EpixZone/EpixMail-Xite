@@ -3,20 +3,20 @@
  "address_index": 44217918,
  "background-color": "#F6F6F9",
  "background-color-dark": "#151517",
- "description": "End-to-end encrypted P2P mail with group conversations",
- "epixnet_version": "0.2.0",
+ "description": "End-to-end encrypted P2P messaging",
+ "epixnet_version": "0.3.10",
  "files": {
   "LICENSE": {
    "sha512": "e67014a69caa38c58575f333619243c9ebb3c98d462f0b4823ff5ed3d2cfdba3",
    "size": 1077
   },
   "README.md": {
-   "sha512": "89bd0e4cc3ff8c0e9ba04d1e1ed79a1538589c6d224b51e5ab2f1cd5f359f09b",
-   "size": 2135
+   "sha512": "d4cba21ab80203afd60f807a775c52a131411bcc73bdff984343f068f7570f1a",
+   "size": 4542
   },
   "css/all.css": {
-   "sha512": "e620537ab4853045af715689a5bcb10761c8475dffc0fd2e26e7c434034f6ccd",
-   "size": 40592
+   "sha512": "c3ec5d66b3690ac51bce3c0a877151525e121b5a1cb2d0a9a3e6d3dbca081275",
+   "size": 43555
   },
   "data-default/users/content-default.json": {
    "sha512": "8c058c0e544828fcbc4f3275b224edf90ed11f1fced0ee3032e16b815e94c14a",
@@ -31,24 +31,24 @@
    "size": 437
   },
   "index.html": {
-   "sha512": "efba5a1199d716cf497cec840c9e61a2880603eaa456f37f136ace4d99e3bd54",
-   "size": 2006
+   "sha512": "6d926edf4b329cd8240dd22c06d685ca0925cb7259289c8b28494950e6129686",
+   "size": 2049
   },
   "js/ContactsPage.js": {
    "sha512": "6c7a91051b3414b70205e5f7d96e93c2a13a1a68f0f9f939840b7de3d37d86ca",
    "size": 3089
   },
   "js/EpixMail.js": {
-   "sha512": "d936106b3f6c6f7adc347034ef3b3369e0ebca7785ae8e101432c630b09a03f3",
-   "size": 13491
+   "sha512": "a327e7186312a06bc8943ff56698d550715d2abdb1ea60a2c4071ca252a55477",
+   "size": 19642
   },
   "js/Message.js": {
-   "sha512": "ef20957631d571e6e5afd83a5f39b875b40719caac59adb3998b8269bfb0a2d2",
-   "size": 6279
+   "sha512": "2edcb0aab3e325b5852eabfef1fc3ddb016514feeb247f772ecec73ab0dfeb4d",
+   "size": 6900
   },
   "js/MessageCreate.js": {
-   "sha512": "e50cb06e35e837567207ab5efaa3f795b478e2e9a60a6762aadbe4bfd54609fa",
-   "size": 10246
+   "sha512": "72eda9ce98169191512185fbe55325150981ba8cfec36a698f714b6445b1e480",
+   "size": 11089
   },
   "js/MessageList.js": {
    "sha512": "2044173a542a00691e4b968f740a91d79b9c6ad7db7751b7fb9e1285760ede81",
@@ -67,28 +67,32 @@
    "size": 1053
   },
   "js/MessageThread.js": {
-   "sha512": "812b16e78d24cf200ac6c52b442fe697685e190d29a13fefd9b4e654df4207e2",
-   "size": 9894
+   "sha512": "ae5b25214395327d01946ffd5b708b759cf361e30b3cc5a5d7b9c82554eb2e73",
+   "size": 11217
   },
   "js/SearchBar.js": {
    "sha512": "8af58753a2fb16fb63b0d03910784324579254d5faf838860388444c3756d6fa",
    "size": 1669
   },
+  "js/SettingsPage.js": {
+   "sha512": "e9f22f63aef5da9c595e89f2ead232869ef42875c59b0fcbc30f25079db1238b",
+   "size": 3719
+  },
   "js/Shell.js": {
-   "sha512": "4c274e80fe36c4192c5f8c0705be1989fdfdfd60ff36faddd225f54ca24f03ff",
-   "size": 7136
+   "sha512": "99626376e798b69e5fb89c13755622cc7bc2cd8c69b64c301c525a495efd989f",
+   "size": 7449
   },
   "js/StartScreen.js": {
    "sha512": "6ddc2e4646162d9635f304332a06499fdd02e88715ab8a0d87c7b981945f0316",
    "size": 3249
   },
   "js/ThreadStore.js": {
-   "sha512": "9567bb809d6a49963bc7b05f9caa81be04087759b61a773748f9d60e67da63df",
-   "size": 19247
+   "sha512": "7570814b33464b8dae729f58753b98b8c4b26101c39dff9df724065a0a4a7e90",
+   "size": 23010
   },
   "js/User.js": {
-   "sha512": "2fd3f345402eb323b01cf8f9922a59253d489cf8ee60216374406a9be8a9b888",
-   "size": 11790
+   "sha512": "853fe1385825645529911199c2e6d26720d91baeae1671b1a89090bccb321b4f",
+   "size": 12996
   },
   "js/lib/epixframe.js": {
    "sha512": "8cb66604615c662afc621127a3ab534d23323ad4bbfe068d9dae7a62fba73ae9",
@@ -107,12 +111,12 @@
    "size": 4842
   },
   "js/utils/Autocomplete.js": {
-   "sha512": "b872ed8f509fa884b08212851568d92d6f87b99e433e102791d3f74280846549",
-   "size": 4156
+   "sha512": "270ceafb5d4e9ddb8dd85cf8a32d8608035f4d691c861bde5c70f9bbf52373c5",
+   "size": 4845
   },
   "js/utils/Crypto.js": {
-   "sha512": "4bf2887818e8864b8e164c5abf60b4021c5e10b5834f5b6296b53c7f27eb2ca3",
-   "size": 5192
+   "sha512": "7725d74e54c58e89b7835d3543da850b528107b32f0fb82320bea3f457531753",
+   "size": 5447
   },
   "js/utils/Deferred.js": {
    "sha512": "c75c1e14b75552665ce0f65b2c7bc1fed1b23cb0ee9fd61d92de6de0121cd8e8",
@@ -135,16 +139,16 @@
    "size": 548
   },
   "js/utils/RateLimit.js": {
-   "sha512": "4ed2bd6cdcb21e696669be3c227e9f13313bccf9e46541ed7112937d0031a38e",
-   "size": 236
+   "sha512": "8ed47306af19188e2642c0d2004a3d5a602919d123a69e9f71f72290a7275327",
+   "size": 791
   },
   "js/utils/SearchIndex.js": {
    "sha512": "68d631825beeec3d78278ae26c6f9ac06db444664805bdc3e265bf9f56d95bcc",
    "size": 1107
   },
   "js/utils/Text.js": {
-   "sha512": "cb48cb038d42810941bb6d7ca3dde91b33b42f5421d7369bf5bbc255c387cc3e",
-   "size": 3926
+   "sha512": "f72bebc5839dce423111670d97e2d320f5406dc17dce5ec615a4de8b397dee26",
+   "size": 4097
   },
   "js/utils/Time.js": {
    "sha512": "4a9e13400039873cf3be4b65b790720d9d54705da4b46a93d9f2a4ebdf45809d",
@@ -155,44 +159,44 @@
    "size": 684
   },
   "languages/es.json": {
-   "sha512": "55c1e68ac72d3c6050ae1f227380cc7f961cb8165209731c8fd6433ed0e1d369",
-   "size": 1192
+   "sha512": "6e5980fd2c00710de1abd72b7770d6e8a3e6f8c69b33f6213e2ae702175f5530",
+   "size": 3641
   },
   "languages/fa.json": {
-   "sha512": "b9e4277911979a53e4e2f183a276664dc622ed86320e819a1f6091e625fd1d34",
-   "size": 1496
+   "sha512": "d7b8392b9e8858f5adb69ab84883bfa986e7b6420c62ddf0359e7f137576d543",
+   "size": 4915
   },
   "languages/it.json": {
-   "sha512": "b749f859e1ba0da312f70e5281b0788f58641871c6205ec1464e950b39c07d33",
-   "size": 847
+   "sha512": "c2d152ba6ffa60f49048aba2e7a0ac2a3210698c77f7e5c0315f659d5b7c5e51",
+   "size": 3704
   },
   "languages/nl.json": {
-   "sha512": "4ae4b08e49f8fa19df34a1aeb69433585a360be81e4c28157d89cc78b2d3e9a4",
-   "size": 913
+   "sha512": "b65c9ff19c9effeb35ae5ab850f741abf522086e0912061ca47e30b189272f65",
+   "size": 3686
   },
   "languages/pl.json": {
-   "sha512": "752db55356da587f79760fe17aed5b64afde2352815e0830bc41bcb46e375d41",
-   "size": 1214
+   "sha512": "cdeeb20f02ee7a05400a2b41516bd8e6119656fbc0f54af349b87986b772094e",
+   "size": 3736
   },
   "languages/pt-br.json": {
-   "sha512": "6ae216ebd3b1a4ed63fb194449c4fd7a8fe4555eca7325a8efa38025dbb36474",
-   "size": 1161
+   "sha512": "db87bab8a33c0044ae148811192ea5f87c22029e6ac576280bbfb1f155266839",
+   "size": 3747
   },
   "languages/sk.json": {
-   "sha512": "ebcaf3acc1725937aeaa4f21ed531145c45caf9d861366f2afddbc9e2829f638",
-   "size": 1221
+   "sha512": "bfc91d2b4c28ba064a24ea5b717ceb051c7f3c73308b61ca12ae3418b522af96",
+   "size": 3774
   },
   "languages/sl.json": {
-   "sha512": "6f48babddcfac55cd178160c23fdc3df01c5fd521c84209d4ce7a1bb98e483ce",
-   "size": 1126
+   "sha512": "1f8e8c0370eae2ff44b3fb449ada16ecec815bb8163aee62389d65fd67c5c375",
+   "size": 3744
   },
   "languages/zh-tw.json": {
-   "sha512": "b46b292a5239457f2bcddd7a172f27f7efd5db02caf61a8ce0776eb3808e394f",
-   "size": 782
+   "sha512": "b5686a641a61d4edfb22665bad28ce415b511a387b1a09a6ac7634338ab8798f",
+   "size": 3446
   },
   "languages/zh.json": {
-   "sha512": "4eead50cd781ecfb7d880c1dcb80b7aa18e0ecc6b8c6a3e5712ab6e29197dc5c",
-   "size": 771
+   "sha512": "ec6176288fd5109c0e1e2538ea9ea1cb9c7e2a841a78ed13375f914c6a027415",
+   "size": 3446
   }
  },
  "ignore": "(merged-.*|data/users/.*|css/(?!all\\.css)|.*\\.coffee|\\.git)",
@@ -203,15 +207,11 @@
   }
  },
  "inner_path": "content.json",
- "modified": 1776306440,
- "notification_icons": {
-  "new_conversations": "img/logo.svg"
- },
+ "modified": 1784421407,
+ "notification_icons": {"new_conversations": "img/logo.svg"},
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
- "signs": {
-  "epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HMiRbI60QdOtCb14Y7EdYrKYYWPfNo6PziYZ8ltYJ2lUB9teNovH0QnWiwoAzwmjrh7HbNFQlZRf/I4xyjD3LBk="
- },
+ "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HDarbR1HpS6mRo4/zWZgjLjWv0gwEASwimR9xLV34kd5OHQnuIFOhFl9CXCm5Gn16qGqVIqYb/3wW9GZSCtuCjA="},
  "signs_required": 1,
  "title": "Epix Mail",
  "viewport": "width=device-width, initial-scale=1"

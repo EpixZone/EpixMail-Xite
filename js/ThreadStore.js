@@ -327,7 +327,7 @@
       var storage = Page.local_storage || {};
       var deleted = storage.deleted || [];
       var first_load = !this.loaded;
-      var threads = [];
+      var fragments = [];         // one per conv_id, merged below
       var sent_rows = [];
 
       for (var ci = 0; ci < conv_ids.length; ci++) {
@@ -376,30 +376,86 @@
           }
         }
         if (msgs.length === 0) continue;
-        var first = msgs[0];
-        var latest = msgs[msgs.length - 1];
-        var thread = {
-          key: "conv-" + conv_id,
-          conv_id: conv_id,
-          members: members,
-          thread_messages: msgs,
-          thread_count: msgs.length,
-          date_added: latest.date_added,
-          subject: first.subject || latest.subject,
-          body: latest.body,
-          from_xid: latest.from_xid,
-          initiator: Crypto.normalizeXid(first.from_xid),
-          peer_xid: this.firstOther(members, my_xid),
-          disable_animation: first_load
-        };
-        this.applyThreadState(thread, my_xid);
-        threads.push(thread);
+        fragments.push({conv_id: conv_id, members: members, msgs: msgs});
+      }
+
+      // Coalesce 1:1 fragments (identical two-member set) that were recorded
+      // under different random conv_ids. Conversation ids are random per send
+      // (Crypto.generateConversationId), so legacy data - and any "new
+      // message" composed to an existing contact - can scatter one logical
+      // conversation across several ids. Grouping by the member pair reunites
+      // them into a single row. Group chats (3+ members) and notes-to-self
+      // stay keyed by their own conv_id.
+      var by_pair = {};
+      var groups = [];
+      for (var fi = 0; fi < fragments.length; fi++) {
+        var frag = fragments[fi];
+        if (frag.members.length === 2) {
+          var pair_key = frag.members.join("|");
+          if (!by_pair[pair_key]) {
+            by_pair[pair_key] = [];
+            groups.push(by_pair[pair_key]);
+          }
+          by_pair[pair_key].push(frag);
+        } else {
+          groups.push([frag]);
+        }
+      }
+
+      var threads = [];
+      for (var gi = 0; gi < groups.length; gi++) {
+        threads.push(this.buildThreadFromFragments(groups[gi], my_xid, first_load));
       }
 
       threads.sort(function(a, b) { return b.date_added - a.date_added; });
       sent_rows.sort(function(a, b) { return b.date_added - a.date_added; });
       this.threads = threads;
       this.sent_rows = sent_rows;
+    }
+
+    // Assemble one thread row from one or more per-conv fragments sharing the
+    // same members. conv_ids lists every underlying conversation id; conv_id
+    // is the representative (the id carrying the newest message) used for
+    // replies and navigation. Star/archive read every id in conv_ids, so
+    // state survives even when the representative shifts to a newer id.
+    buildThreadFromFragments(frags, my_xid, first_load) {
+      var all_msgs = [];
+      var conv_ids = [];
+      var rep_conv_id = frags[0].conv_id;
+      var rep_ts = -1;
+      for (var i = 0; i < frags.length; i++) {
+        conv_ids.push(frags[i].conv_id);
+        var fmsgs = frags[i].msgs;
+        for (var j = 0; j < fmsgs.length; j++) all_msgs.push(fmsgs[j]);
+        var last = fmsgs[fmsgs.length - 1];
+        if (last && last.ts > rep_ts) {
+          rep_ts = last.ts;
+          rep_conv_id = frags[i].conv_id;
+        }
+      }
+      all_msgs.sort(this.orderMessages);
+      var members = frags[0].members;
+      var first = all_msgs[0];
+      var latest = all_msgs[all_msgs.length - 1];
+      var thread = {
+        // 1:1 rows key on the member pair so the row stays stable as the
+        // representative id moves; groups/self key on their conv_id
+        key: members.length === 2 ? "pair-" + members.join("|") : "conv-" + rep_conv_id,
+        conv_id: rep_conv_id,
+        conv_ids: conv_ids,
+        members: members,
+        thread_messages: all_msgs,
+        thread_count: all_msgs.length,
+        date_added: latest.date_added,
+        subject: first.subject || latest.subject,
+        body: latest.body,
+        from_xid: latest.from_xid,
+        initiator: Crypto.normalizeXid(first.from_xid),
+        peer_xid: this.firstOther(members, my_xid),
+        disable_animation: first_load
+      };
+      this.applyThreadState(thread, my_xid);
+      return thread;
     }
 
     firstOther(members, my_xid) {
@@ -425,8 +481,16 @@
           }
         }
       }
-      thread.folder = junk ? "junk" : (archived[thread.conv_id] ? "archived" : "inbox");
-      thread.starred = !!starred[thread.conv_id];
+      // A merged thread is archived/starred if ANY of its underlying
+      // conversation ids carries the flag
+      var ids = thread.conv_ids || [thread.conv_id];
+      var is_archived = false, is_starred = false;
+      for (var ai = 0; ai < ids.length; ai++) {
+        if (archived[ids[ai]]) is_archived = true;
+        if (starred[ids[ai]]) is_starred = true;
+      }
+      thread.folder = junk ? "junk" : (is_archived ? "archived" : "inbox");
+      thread.starred = is_starred;
     }
 
     // Recompute folders/stars on the already built threads after a settings
@@ -439,9 +503,14 @@
       Page.projector.scheduleRender();
     }
 
+    // Resolve by the representative id or any merged member id, so a link or
+    // notification that carries a non-representative conv_id still lands on
+    // the coalesced thread.
     getThread(conv_id) {
       for (var i = 0; i < this.threads.length; i++) {
-        if (this.threads[i].conv_id === conv_id) return this.threads[i];
+        var t = this.threads[i];
+        if (t.conv_id === conv_id) return t;
+        if (t.conv_ids && t.conv_ids.indexOf(conv_id) !== -1) return t;
       }
       return null;
     }
@@ -499,14 +568,24 @@
       return count;
     }
 
+    // Every conv_id merged into the thread this id belongs to, so a flag set
+    // or cleared on a coalesced 1:1 thread covers all of its underlying ids.
+    threadConvIds(conv_id) {
+      var thread = this.getThread(conv_id);
+      return (thread && thread.conv_ids) || [conv_id];
+    }
+
     toggleStar(conv_id) {
       if (!Page.local_storage) return;
       if (!Page.local_storage.starred) Page.local_storage.starred = {};
-      if (Page.local_storage.starred[conv_id]) {
-        delete Page.local_storage.starred[conv_id];
-      } else {
-        Page.local_storage.starred[conv_id] = true;
+      var ids = this.threadConvIds(conv_id);
+      var starred = Page.local_storage.starred;
+      var was_starred = false;
+      for (var i = 0; i < ids.length; i++) {
+        if (starred[ids[i]]) was_starred = true;
+        delete starred[ids[i]];
       }
+      if (!was_starred) starred[conv_id] = true;
       Page.saveLocalStorage();
       this.applyFolders();
     }
@@ -514,11 +593,10 @@
     setArchived(conv_id, is_archived) {
       if (!Page.local_storage) return;
       if (!Page.local_storage.archived) Page.local_storage.archived = {};
-      if (is_archived) {
-        Page.local_storage.archived[conv_id] = true;
-      } else {
-        delete Page.local_storage.archived[conv_id];
-      }
+      var ids = this.threadConvIds(conv_id);
+      var archived = Page.local_storage.archived;
+      for (var i = 0; i < ids.length; i++) delete archived[ids[i]];
+      if (is_archived) archived[conv_id] = true;
       Page.saveLocalStorage();
       this.applyFolders();
     }

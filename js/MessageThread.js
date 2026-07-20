@@ -133,7 +133,11 @@
       if (textarea) Animation.scramble(textarea);
       Page.projector.scheduleRender();
       var recipients = others.length ? others : [Crypto.normalizeXid(Page.user.getMyXid())];
-      Page.user.sendMessage(recipients, subject, this.reply_body, this.conv_id, (res) => {
+      // Reply into the thread's representative id (the newest merged
+      // conversation), not whatever id the URL happened to carry, so the
+      // reply stays in the coalesced thread and reunifies split legacy ones.
+      var reply_conv_id = thread.conv_id || this.conv_id;
+      Page.user.sendMessage(recipients, subject, this.reply_body, reply_conv_id, (res) => {
         this.sending = false;
         if (res) {
           this.reply_body = "";
