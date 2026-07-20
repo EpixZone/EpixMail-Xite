@@ -3,6 +3,13 @@
 	"db_file": "data/users/epixmail.db",
 	"version": 2,
 	"maps": {
+		".+/messages.json": {
+			"to_table": [
+				{"node": "post", "table": "message"}
+			],
+			"file_name": "data.json",
+			"fold_crdt": "post"
+		},
 		".+/data.json": {
 			"to_table": [
 				{
@@ -19,6 +26,27 @@
 		}
 	},
 	"tables": {
+		"message": {
+			"cols": [
+				["post_id", "INTEGER"],
+				["conv_id", "TEXT"],
+				["seq", "INTEGER"],
+				["ts", "INTEGER"],
+				["from_xid", "TEXT"],
+				["members", "TEXT"],
+				["established", "INTEGER"],
+				["ct", "TEXT"],
+				["sig", "TEXT"],
+				["date_added", "INTEGER"],
+				["json_id", "INTEGER REFERENCES json (json_id)"]
+			],
+			"indexes": [
+				"CREATE UNIQUE INDEX message_key ON message(json_id, post_id)",
+				"CREATE INDEX message_conv ON message(conv_id)",
+				"CREATE INDEX message_ts ON message(ts)"
+			],
+			"schema_changed": 3
+		},
 		"conversation": {
 			"cols": [
 				["conv_id", "TEXT"],

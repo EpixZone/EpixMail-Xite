@@ -6,25 +6,18 @@
       return Page.thread_store.sent_rows;
     }
 
-    // Deleting a sent message removes it from my own signed data.json (the
-    // one copy I control), then republishes.
+    // Deleting a sent message signs a tombstone into my messages.json (the CRDT
+    // fold hides it everywhere and it propagates to my other devices), and also
+    // drops any not-yet-migrated legacy copy from data.json. A local tombstone
+    // gives an immediate hide on this device (covers a legacy copy still being
+    // read) before the reload.
     deleteMessage(message) {
       var row = message.row;
-      var convs = Page.user.data && Page.user.data.conversations;
-      var conv = convs && convs[row.conv_id];
-      if (conv && conv.messages && conv.messages[String(row.date_added)]) {
-        delete conv.messages[String(row.date_added)];
-        if (Object.keys(conv.messages).length === 0) {
-          delete convs[row.conv_id];
-        }
-        Page.user.saveData().then(function() {
-          Page.thread_store.invalidate();
-          Page.thread_store.load("noanim");
-        });
-      } else {
-        // Not in my file (already gone): fall back to a local tombstone
+      Page.user.deleteMessage(row.conv_id, row.seq, row.date_added, function(ok) {
         Page.thread_store.deleteThread({thread_messages: [row]});
-      }
+        Page.thread_store.invalidate();
+        Page.thread_store.load("noanim");
+      });
     }
   }
 

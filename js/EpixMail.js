@@ -315,18 +315,21 @@
       });
     }
 
-    // Conversations that include me: legacy peer_xid or the members list
-    // (JSON text in the DB, so the quoted LIKE is exact)
+    // Inbound messages that include me: a signed-CRDT message record encrypted
+    // to me (its ct dict, stored as JSON text, has my xid dir as a key), from a
+    // peer's file (not my own). Same quoted-LIKE trick as the old members test.
     getConversationPredicate(my_xid_dir) {
-      return "(conversation.peer_xid = '" + my_xid_dir + "' OR conversation.members LIKE '%\"" + my_xid_dir + "\"%') AND json.directory != '" + my_xid_dir + "'";
+      return "message.ct LIKE '%\"" + my_xid_dir + "\"%' AND json.directory != '" + my_xid_dir + "'";
     }
 
     registerFeedFollows() {
       var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
       if (!my_xid_dir) return;
+      // established rides the first record of a conversation; MAX per peer dir
+      // picks it out (later replies leave the column NULL).
       var feeds = {
         "New conversations": [
-          "SELECT 'message' AS type, MAX(conversation.established) AS date_added, 'Encrypted conversation' AS title, 'New conversation with ' || json.directory AS body, '' AS url FROM conversation LEFT JOIN json USING (json_id) WHERE conversation.established > 0 AND " + this.getConversationPredicate(my_xid_dir) + " GROUP BY json.directory",
+          "SELECT 'message' AS type, MAX(message.established) AS date_added, 'Encrypted conversation' AS title, 'New conversation with ' || json.directory AS body, '' AS url FROM message LEFT JOIN json USING (json_id) WHERE message.established > 0 AND " + this.getConversationPredicate(my_xid_dir) + " GROUP BY json.directory",
           [""]
         ]
       };
@@ -336,21 +339,25 @@
     registerNotifications() {
       var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
       if (!my_xid_dir) return;
+      // my_seq is now derived from the folded records: a peer's per-conversation
+      // sent count is MAX(seq) over their records for that conversation, summed
+      // across every peer conversation that names me.
       var notifications = {
         "new_conversations": [
-          "SELECT SUM(conversation.my_seq) AS count FROM conversation LEFT JOIN json USING (json_id) WHERE " + this.getConversationPredicate(my_xid_dir),
+          "SELECT SUM(mx) AS count FROM (SELECT MAX(message.seq) AS mx FROM message LEFT JOIN json USING (json_id) WHERE " + this.getConversationPredicate(my_xid_dir) + " GROUP BY json.directory, message.conv_id)",
           []
         ]
       };
       this.cmd("notificationSubscribe", [notifications]);
     }
 
-    // Refresh the cached inbound total (SUM of every peer's my_seq), which
-    // only changes when mail arrives.
+    // Refresh the cached inbound total (SUM over peer conversations of that
+    // peer's MAX(seq)), which only changes when mail arrives. Kept identical to
+    // the notification subscription so baseline math stays consistent.
     refreshNotifTotal(cb) {
       var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
       if (!my_xid_dir) { if (cb) cb(); return; }
-      var query = "SELECT SUM(conversation.my_seq) AS total FROM conversation LEFT JOIN json USING (json_id) WHERE " + this.getConversationPredicate(my_xid_dir);
+      var query = "SELECT SUM(mx) AS total FROM (SELECT MAX(message.seq) AS mx FROM message LEFT JOIN json USING (json_id) WHERE " + this.getConversationPredicate(my_xid_dir) + " GROUP BY json.directory, message.conv_id)";
       this.cmd("dbQuery", [query], (rows) => {
         this.notif_total = (rows && rows[0] && rows[0].total) || 0;
         if (cb) cb();
@@ -468,8 +475,9 @@
       } else if (site_info.event && site_info.event[0] === "file_done") {
         var file_name = site_info.event[1];
         this.user.onSiteInfo(site_info);
-        if (file_name.endsWith("/data.json")) {
-          // A mailbox file arrived (mine from another device, or a peer's):
+        if (file_name.endsWith("/data.json") || file_name.endsWith("/messages.json")) {
+          // A mailbox file arrived (mine from another device, or a peer's) -
+          // either the signed-CRDT messages.json or a legacy data.json:
           // refresh the threads, background-sync style. The node never
           // echoes this event for our own writes on this connection.
           RateLimit(site_info.bad_files > 0 ? 2000 : 500, this.reloadThreadsNoanim);
