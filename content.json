@@ -87,8 +87,8 @@
    "size": 3249
   },
   "js/ThreadStore.js": {
-   "sha512": "218b5840d0a2b49d60878307316e1322892df59a08c20ca0039cf915b143e8f6",
-   "size": 28703
+   "sha512": "156653d0c53ce35d1c4c0f40b8ad75389c06bd7fd781e06ae62021b8de2520d4",
+   "size": 28610
   },
   "js/User.js": {
    "sha512": "0bdc472eed60eeb38cabda9d5f32c55e8b6600db87877c3423663f29ba559280",
@@ -207,11 +207,11 @@
   }
  },
  "inner_path": "content.json",
- "modified": 1784516181,
+ "modified": 1784593991,
  "notification_icons": {"new_conversations": "img/logo.svg"},
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
- "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HH9JNMDClr2dfZ0Ze6Ti/WahyqOxzCTxBAno1kTHlD00JqlgNBAYMdVj32T/u9flv2JDTyaQnRPl8+pAGuTc64k="},
+ "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HAj/WIRTRHnMc1Zbj9wwk7LrjtkxhqwotqYsiCTb+AY8CLWyFKu878gcI0DNjyBnRlnRJHttXE1uh0kcPOvYQeA="},
  "signs_required": 1,
  "title": "Epix Mail",
  "viewport": "width=device-width, initial-scale=1"

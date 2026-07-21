@@ -426,27 +426,20 @@
         fragments.push({conv_id: conv_id, members: members, msgs: msgs});
       }
 
-      // Coalesce 1:1 fragments (identical two-member set) that were recorded
-      // under different random conv_ids. Conversation ids are random per send
-      // (Crypto.generateConversationId), so legacy data - and any "new
-      // message" composed to an existing contact - can scatter one logical
-      // conversation across several ids. Grouping by the member pair reunites
-      // them into a single row. Group chats (3+ members) and notes-to-self
-      // stay keyed by their own conv_id.
-      var by_pair = {};
+      // One thread == one conversation id. The conv_id IS the stable thread
+      // identity (like Gmail's References/Message-Id chain, not the subject):
+      // a fresh compose gets a new id (Crypto.generateConversationId), while a
+      // reply reuses its thread's id (MessageThread routes replies into
+      // thread.conv_id). So every conv_id is exactly one thread, and two
+      // conversations that happen to share a subject never merge. Both peers'
+      // files carry the same conv_id, so their halves already fold together in
+      // by_conv above - no cross-id coalescing needed. (Legacy pre-migration
+      // data that scattered one logical conversation across several random ids
+      // will show as separate rows; that is the accepted trade for never
+      // merging unrelated same-subject threads.)
       var groups = [];
       for (var fi = 0; fi < fragments.length; fi++) {
-        var frag = fragments[fi];
-        if (frag.members.length === 2) {
-          var pair_key = frag.members.join("|");
-          if (!by_pair[pair_key]) {
-            by_pair[pair_key] = [];
-            groups.push(by_pair[pair_key]);
-          }
-          by_pair[pair_key].push(frag);
-        } else {
-          groups.push([frag]);
-        }
+        groups.push([fragments[fi]]);
       }
 
       var threads = [];
@@ -485,9 +478,9 @@
       var first = all_msgs[0];
       var latest = all_msgs[all_msgs.length - 1];
       var thread = {
-        // 1:1 rows key on the member pair so the row stays stable as the
-        // representative id moves; groups/self key on their conv_id
-        key: members.length === 2 ? "pair-" + members.join("|") : "conv-" + rep_conv_id,
+        // Every thread keys on its own conversation id, the stable identity
+        // shared by both peers' files.
+        key: "conv-" + rep_conv_id,
         conv_id: rep_conv_id,
         conv_ids: conv_ids,
         members: members,
