@@ -375,55 +375,15 @@
   }
  },
  "inner_path": "content.json",
- "modified": 1785266633,
- "notification_icons": {
-  "new_conversations": "img/logo.svg"
- },
+ "modified": 1785365948,
+ "notification_icons": {"new_conversations": "img/logo.svg"},
  "order_policy": {
-  "first_paint": [
-   "index.html",
-   "css/all.css",
-   "js/lib/maquette.js",
-   "js/lib/marked.min.js",
-   "js/lib/epixframe.js",
-   "js/utils/LogMixin.js",
-   "js/utils/Deferred.js",
-   "js/utils/Dollar.js",
-   "js/utils/Prototypes.js",
-   "js/utils/RateLimit.js",
-   "js/utils/Translate.js",
-   "js/utils/Animation.js",
-   "js/utils/Menu.js",
-   "js/utils/Text.js",
-   "js/utils/Time.js",
-   "js/utils/Autocomplete.js",
-   "js/utils/Crypto.js",
-   "js/utils/SearchIndex.js",
-   "js/User.js",
-   "js/ThreadStore.js",
-   "js/Message.js",
-   "js/MessageList.js",
-   "js/MessageListThreads.js",
-   "js/MessageListSent.js",
-   "js/SearchBar.js",
-   "js/MessageLists.js",
-   "js/MessageThread.js",
-   "js/MessageCreate.js",
-   "js/ContactsPage.js",
-   "js/SettingsPage.js",
-   "js/StartScreen.js",
-   "js/Shell.js",
-   "js/EpixMail.js"
-  ],
-  "prefetch": [
-   "dbschema.json"
-  ]
+  "first_paint": ["index.html","css/all.css","js/lib/maquette.js","js/lib/marked.min.js","js/lib/epixframe.js","js/utils/LogMixin.js","js/utils/Deferred.js","js/utils/Dollar.js","js/utils/Prototypes.js","js/utils/RateLimit.js","js/utils/Translate.js","js/utils/Animation.js","js/utils/Menu.js","js/utils/Text.js","js/utils/Time.js","js/utils/Autocomplete.js","js/utils/Crypto.js","js/utils/SearchIndex.js","js/User.js","js/ThreadStore.js","js/Message.js","js/MessageList.js","js/MessageListThreads.js","js/MessageListSent.js","js/SearchBar.js","js/MessageLists.js","js/MessageThread.js","js/MessageCreate.js","js/ContactsPage.js","js/SettingsPage.js","js/StartScreen.js","js/Shell.js","js/EpixMail.js"],
+  "prefetch": ["dbschema.json"]
  },
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
- "signs": {
-  "epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "GwAD46wYwDuxrYcFZl4ls4pYwAerquPECTzYo+CYQxxBE0dMGHfoQYJcHgF/wZVW4hCg6alBlg7+ipGQYumGuZ4="
- },
+ "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HKmaGp23akLYOhbajCgqXfis87i/J7BkgivG/nIPeDxVHRPlm/BM0b8stgm92D2w1is+8IUT/61OTQqsCqib+jc="},
  "signs_required": 1,
  "title": "Epix Mail",
  "viewport": "width=device-width, initial-scale=1"
