@@ -21,7 +21,7 @@
   },
   "paths": {
    "data/users/": {
-    "retention": "partial",
+    "retention": "complete",
     "unit": "feed"
    }
   }
