@@ -158,7 +158,11 @@
     }
 
     getBodyRenderer(msg) {
-      var key = msg.msg_key;
+      // Cache the per-message markdown renderer under the message's real unique
+      // id. (The old `msg.msg_key` was never set by ThreadStore, so every body
+      // collapsed into the one `undefined` cache slot and reused message #0's
+      // closure — every bubble showed the first message's text.)
+      var key = msg.msg_id;
       if (!this._body_renderers[key]) {
         this._body_renderers[key] = function(node) {
           node.innerHTML = Text.renderMarked(msg.body, {"sanitize": true});
@@ -172,7 +176,7 @@
       var from = Crypto.normalizeXid(msg.from_xid);
       var is_mine = from === my_xid;
       var renderBody = this.getBodyRenderer(msg);
-      return h("div.thread-message", {key: "tm-" + msg.msg_key, classes: {mine: is_mine}}, [
+      return h("div.thread-message", {key: "tm-" + msg.msg_id, classes: {mine: is_mine}}, [
         Page.renderXidAvatar(from),
         h("div.thread-message-main", [
           h("div.thread-message-head", [

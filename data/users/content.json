@@ -3,22 +3,16 @@
  "files": {},
  "ignore": ".",
  "inner_path": "data/users/content.json",
- "modified": 1785365950,
- "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HA+z6Egn+23ItKYiImObdhh+kMow7Fr/f7JMJfAwJvrveYNFIm3NEUfHu1z0APpp2tgVyDtNHCWQwOTxYU2oOnc="},
+ "modified": 1788131453,
+ "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HIX5quchmU3EGTMQSrbEhXjjbxO5WrmPL2ioZpqO14AVdKjSrSEnWZY2vPZkFRMF1jKvWtO8mtJxG/o20rodK7Q="},
  "user_contents": {
   "cert_signers": {
    "xid.epix": ["chain"]
   },
   "permission_rules": {
    ".": {
-    "files_allowed": "data.json",
-    "max_size": 1000000,
-    "merge_files": {
-     "messages.json": {
-      "class": "epix-orset-1",
-      "max_size": 3000000
-     }
-    }
+    "files_allowed": "data\\.json|data-[0-9a-z]+\\.json",
+    "max_size": 8192
    }
   },
   "permissions": {}

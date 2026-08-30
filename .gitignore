@@ -3,3 +3,6 @@
 data/users/*/
 js/all.js
 js/lib/all.js
+*.db-shm
+*.db-wal
+.sign-cache.json

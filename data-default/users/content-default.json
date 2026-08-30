@@ -1,29 +1,25 @@
 {
-  "files": {},
-  "ignore": ".*",
-  "modified": 1436226671.535,
-  "signs": {},
-  "user_contents": {
-    "cert_signers": {
-      "xid.epix": ["chain"]
-    },
-    "permission_rules": {
-      ".*": {
-        "files_allowed": "data.json",
-        "max_size": 1000000,
-        "merge_files": {
-          "messages.json": {"class": "epix-orset-1", "max_size": 3000000}
-        }
-      }
-    },
-    "permissions": {
-      ".*": {
-        "files_allowed": "data.json",
-        "max_size": 1000000,
-        "merge_files": {
-          "messages.json": {"class": "epix-orset-1", "max_size": 3000000}
-        }
-      }
-    }
+ "files": {},
+ "ignore": ".*",
+ "modified": 1436226671.535,
+ "signs": {},
+ "user_contents": {
+  "cert_signers": {
+   "xid.epix": [
+    "chain"
+   ]
+  },
+  "permission_rules": {
+   ".*": {
+    "files_allowed": "data\\.json|data-[0-9a-z]+\\.json",
+    "max_size": 8192
+   }
+  },
+  "permissions": {
+   ".*": {
+    "files_allowed": "data\\.json|data-[0-9a-z]+\\.json",
+    "max_size": 8192
+   }
   }
+ }
 }

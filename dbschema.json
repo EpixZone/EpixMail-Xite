@@ -1,67 +1,16 @@
 {
-	"db_name": "EpixMail",
-	"db_file": "data/users/epixmail.db",
-	"version": 2,
+	"db_name": "EpixChannels",
+	"db_file": "data/users/epixchannels.db",
+	"version": 3,
 	"maps": {
-		".+/messages.json": {
-			"to_table": [
-				{"node": "post", "table": "message"}
-			],
-			"file_name": "data.json",
-			"fold_crdt": "post"
-		},
 		".+/data.json": {
-			"to_table": [
-				{
-					"node": "conversations",
-					"table": "conversation",
-					"key_col": "conv_id",
-					"import_cols": ["peer_xid", "members", "established", "my_seq"]
-				}
-			],
-			"to_keyvalue": ["publickey", "signed_prekey", "prekey_sig", "prekey_ts"]
+			"to_keyvalue": ["v", "ik", "spk_idx"]
 		},
 		".+/content.json": {
 			"to_keyvalue": ["cert_user_id"]
 		}
 	},
 	"tables": {
-		"message": {
-			"cols": [
-				["post_id", "INTEGER"],
-				["conv_id", "TEXT"],
-				["seq", "INTEGER"],
-				["ts", "INTEGER"],
-				["from_xid", "TEXT"],
-				["members", "TEXT"],
-				["established", "INTEGER"],
-				["ct", "TEXT"],
-				["sig", "TEXT"],
-				["date_added", "INTEGER"],
-				["json_id", "INTEGER REFERENCES json (json_id)"]
-			],
-			"indexes": [
-				"CREATE UNIQUE INDEX message_key ON message(json_id, post_id)",
-				"CREATE INDEX message_conv ON message(conv_id)",
-				"CREATE INDEX message_ts ON message(ts)"
-			],
-			"schema_changed": 3
-		},
-		"conversation": {
-			"cols": [
-				["conv_id", "TEXT"],
-				["peer_xid", "TEXT"],
-				["members", "TEXT"],
-				["established", "INTEGER"],
-				["my_seq", "INTEGER"],
-				["json_id", "INTEGER REFERENCES json (json_id)"]
-			],
-			"indexes": [
-				"CREATE UNIQUE INDEX conversation_key ON conversation(json_id, conv_id)",
-				"CREATE INDEX conversation_peer ON conversation(peer_xid)"
-			],
-			"schema_changed": 3
-		}
 	},
 	"feeds": {
 	}

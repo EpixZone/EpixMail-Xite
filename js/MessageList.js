@@ -24,8 +24,12 @@
     applySearch(rows) {
       var query = this.message_lists.search_query;
       if (!query) return rows;
-      return rows.filter(function(row) {
-        return SearchIndex.matches(row, query);
+      query = query.toLowerCase();
+      return rows.filter(function (row) {
+        var hay =
+          ((row.subject || "") + " " + (row.body || "") + " " + (row.members || []).join(" "))
+            .toLowerCase();
+        return hay.indexOf(query) !== -1;
       });
     }
 

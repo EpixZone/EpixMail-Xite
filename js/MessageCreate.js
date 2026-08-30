@@ -1,9 +1,13 @@
 (function() {
 
   // Compose modal: To-chips for one or many recipients, subject, body and
-  // the signature "Encrypt & Send" scramble effect. Every chip is validated
-  // twice: the xID must exist on chain (xidResolveName) and the person must
-  // have published mail keys (their data.json on this xite).
+  // the signature "Encrypt & Send" scramble effect. A chip is valid when the
+  // xID exists - and ONLY that. Whether the person has published mail keys is
+  // deliberately NOT surfaced here: doing so would advertise who is and is
+  // not on the mail platform, and since enrollment is now explicit (no file
+  // is created just by visiting), absence proves nothing anyway. Delivery
+  // capability is checked once, at send, where the node gives the honest
+  // error if the recipient has no published keys yet.
   class MessageCreate {
     constructor() {
       this.visible = false;
@@ -11,7 +15,7 @@
       this.body = "";
       this.sending = false;
       this.just_sent = false;
-      this.to_list = [];  // [{name, checking, valid, unreachable, reason, seq}]
+      this.to_list = [];  // [{name, checking, valid, reason, seq}]
       this._chip_seq = 0;
       this.node = null;
       this.handleCloseClick = this.handleCloseClick.bind(this);
@@ -75,45 +79,55 @@
       for (var i = 0; i < this.to_list.length; i++) {
         if (this.to_list[i].name === name) return;
       }
-      var chip = {name: name, checking: true, valid: null, unreachable: false, reason: null, seq: ++this._chip_seq};
+      var chip = {name: name, checking: true, valid: null, reason: null, seq: ++this._chip_seq};
       this.to_list.push(chip);
       this.validateChip(chip);
       Page.projector.scheduleRender();
     }
 
-    // A published mail pubkey is the real requirement for sending (and
-    // proves the xID exists), so check it first; the chain lookup only runs
-    // when there are no keys, to tell a typo apart from someone who just
-    // hasn't opened Epix Mail yet. This keeps compose working when the
-    // chain resolver is unreachable.
+    // Valid chip == the xID exists. Nothing else: key-publication status is
+    // never surfaced during compose (it would advertise who is on the mail
+    // platform). The local bundle read is only a zero-leak fast path that
+    // also keeps compose working when the chain resolver is unreachable.
     validateChip(chip) {
       var xid = this.withTld(chip.name);
       var seq = chip.seq;
-      Crypto.resolveMemberPubkeys([xid], (pubkeys, missing) => {
-        if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
-        if (missing.length === 0) {
-          chip.checking = false;
-          chip.valid = true;
-          chip.unreachable = false;
-          chip.reason = null;
-          Page.projector.scheduleRender();
-          return;
-        }
-        Page.cmd("xidResolveName", [xid], (result) => {
+      // Fast path: a purely local read of the recipient's already-synced key
+      // bundle (zero network, no leak of who you're composing to). A bundle
+      // proves the xID exists, so no chain call is needed. Without one, a
+      // single chain lookup checks the ONE thing a chip validates: that the
+      // xID exists. Key-publication status is intentionally not shown.
+      Page.channel
+        .keyLookup([xid])
+        .then((res) => {
+          if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
+          var entry = res && res[Crypto.normalizeXid(xid)];
+          if (entry && entry.has_bundle) {
+            chip.checking = false;
+            chip.valid = true;
+            chip.reason = null;
+            Page.projector.scheduleRender();
+            return;
+          }
+          Page.cmd("xidResolveName", [xid], (result) => {
+            if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
+            chip.checking = false;
+            if (result && !result.error) {
+              chip.valid = true;
+              chip.reason = null;
+            } else {
+              chip.valid = false;
+              chip.reason = _("xID not found");
+            }
+            Page.projector.scheduleRender();
+          });
+        })
+        .catch(() => {
           if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
           chip.checking = false;
-          if (result && !result.error) {
-            chip.valid = true;
-            chip.unreachable = true;
-            chip.reason = missing[0].reason;
-          } else {
-            chip.valid = false;
-            chip.unreachable = false;
-            chip.reason = missing[0].reason || _("xID not found");
-          }
+          chip.valid = false;
           Page.projector.scheduleRender();
         });
-      });
     }
 
     handleChipRemoveClick(e) {
@@ -130,7 +144,7 @@
       if (!this.body.trim() || this.to_list.length === 0 || !Page.user.publickey) return false;
       for (var i = 0; i < this.to_list.length; i++) {
         var chip = this.to_list[i];
-        if (chip.checking || chip.valid !== true || chip.unreachable) return false;
+        if (chip.checking || chip.valid !== true) return false;
       }
       return true;
     }
@@ -198,7 +212,7 @@
       if (!this.isFilled()) {
         for (var i = 0; i < this.to_list.length; i++) {
           var chip = this.to_list[i];
-          if (chip.valid === false || chip.unreachable) {
+          if (chip.valid === false) {
             Page.cmd("wrapperNotification", ["error", chip.reason || (_("Can't send to") + " " + chip.name)]);
             return false;
           }
@@ -255,15 +269,13 @@
         title: chip.reason || this.withTld(chip.name),
         classes: {
           checking: chip.checking,
-          valid: chip.valid === true && !chip.unreachable,
-          invalid: chip.valid === false,
-          unreachable: chip.unreachable
+          valid: chip.valid === true,
+          invalid: chip.valid === false
         }
       }, [
         h("span.chip-name", chip.name),
         chip.checking ? h("span.spinner") : null,
         chip.valid === false ? h("span.chip-err", _("not found")) : null,
-        chip.unreachable ? h("span.chip-err", _("no mail keys")) : null,
         h("a.chip-x", {
           href: "#Remove",
           "data-name": chip.name,

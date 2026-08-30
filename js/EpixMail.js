@@ -32,6 +32,12 @@
 
     createProjector() {
       this.projector = maquette.createProjector();
+      // The channel API must exist before the very first route() below, which
+      // (via MessageLists.setActive -> ThreadStore.load) calls Page.channel
+      // synchronously. onOpenWebsocket only fires when the socket opens, long
+      // after this — so create it here. EpixFrame.cmd() queues until the socket
+      // is up, so any channel command issued before then just waits.
+      Page.channel = new Channel(this);
       this.message_create = new MessageCreate();
       this.message_lists = new MessageLists();
       this.message_thread = new MessageThread();
@@ -301,10 +307,13 @@
 
     onOpenWebsocket(e) {
       this.cmd("wrapperSetViewport", "width=device-width, initial-scale=1");
+      // The node owns the private index, feeds and notifications now; the page
+      // talks to it only through the channel API. No SQL over shared data.
+      // Already created in createProjector(); only make one if missing (e.g. a
+      // reconnect) so we keep the cached session.
+      if (!Page.channel) Page.channel = new Channel(this);
       this.cmd("siteInfo", {}, (site_info) => {
         this.setSiteInfo(site_info);
-        this.registerFeedFollows();
-        this.registerNotifications();
       });
       this.cmd("serverInfo", {}, (server_info) => {
         this.setServerInfo(server_info);
@@ -315,53 +324,29 @@
       });
     }
 
-    // Inbound messages that include me: a signed-CRDT message record encrypted
-    // to me (its ct dict, stored as JSON text, has my xid dir as a key), from a
-    // peer's file (not my own). Same quoted-LIKE trick as the old members test.
-    getConversationPredicate(my_xid_dir) {
-      return "message.ct LIKE '%\"" + my_xid_dir + "\"%' AND json.directory != '" + my_xid_dir + "'";
+    // Feeds and notifications are computed by the node from the PRIVATE channel
+    // index — no query over shared data, no plaintext xID ever in a predicate.
+    // The old `message.ct LIKE '%"<name>"%'` discovery (which leaked the whole
+    // social graph) and its `'New conversation with ' || json.directory` feed
+    // are gone. These stay as no-ops so old callers don't break.
+    getConversationPredicate() {
+      return "";
     }
+    registerFeedFollows() {}
+    registerNotifications() {}
 
-    registerFeedFollows() {
-      var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
-      if (!my_xid_dir) return;
-      // established rides the first record of a conversation; MAX per peer dir
-      // picks it out (later replies leave the column NULL).
-      var feeds = {
-        "New conversations": [
-          "SELECT 'message' AS type, MAX(message.established) AS date_added, 'Encrypted conversation' AS title, 'New conversation with ' || json.directory AS body, '' AS url FROM message LEFT JOIN json USING (json_id) WHERE message.established > 0 AND " + this.getConversationPredicate(my_xid_dir) + " GROUP BY json.directory",
-          [""]
-        ]
-      };
-      this.cmd("feedFollow", [feeds]);
-    }
-
-    registerNotifications() {
-      var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
-      if (!my_xid_dir) return;
-      // my_seq is now derived from the folded records: a peer's per-conversation
-      // sent count is MAX(seq) over their records for that conversation, summed
-      // across every peer conversation that names me.
-      var notifications = {
-        "new_conversations": [
-          "SELECT SUM(mx) AS count FROM (SELECT MAX(message.seq) AS mx FROM message LEFT JOIN json USING (json_id) WHERE " + this.getConversationPredicate(my_xid_dir) + " GROUP BY json.directory, message.conv_id)",
-          []
-        ]
-      };
-      this.cmd("notificationSubscribe", [notifications]);
-    }
-
-    // Refresh the cached inbound total (SUM over peer conversations of that
-    // peer's MAX(seq)), which only changes when mail arrives. Kept identical to
-    // the notification subscription so baseline math stays consistent.
+    // The unread total now comes from the node's channel session info (a count
+    // over the private index), never from a shared-data query.
     refreshNotifTotal(cb) {
-      var my_xid_dir = (Page.site_info && Page.site_info.xid_directory) || "";
-      if (!my_xid_dir) { if (cb) cb(); return; }
-      var query = "SELECT SUM(mx) AS total FROM (SELECT MAX(message.seq) AS mx FROM message LEFT JOIN json USING (json_id) WHERE " + this.getConversationPredicate(my_xid_dir) + " GROUP BY json.directory, message.conv_id)";
-      this.cmd("dbQuery", [query], (rows) => {
-        this.notif_total = (rows && rows[0] && rows[0].total) || 0;
-        if (cb) cb();
-      });
+      Page.channel
+        .sessionInfo()
+        .then((info) => {
+          this.notif_total = (info && info.unread) || 0;
+          if (cb) cb();
+        })
+        .catch(() => {
+          if (cb) cb();
+        });
     }
 
     // Persist the baseline only when it actually changed, so background loads
@@ -402,7 +387,7 @@
       var title, body;
       if (fresh.length === 1) {
         title = _("New message from") + " " + sender;
-        body = latest.subject || (latest.body || "").replace(/\s+/g, " ").substring(0, 120);
+        body = latest.subject || (latest.snippet || "").replace(/\s+/g, " ").substring(0, 120);
       } else {
         title = String(fresh.length) + " " + _("new messages");
         body = _("Latest from") + " " + sender;
@@ -421,7 +406,19 @@
 
     onRequest(cmd, message) {
       var params = message.params;
-      if (cmd === "setSiteInfo") {
+      if (cmd === "channelEvent") {
+        // The node pushes {type, conv_id, from_xid, subject, snippet, unread}
+        // on new mail. Refresh the thread list and fire a desktop notification.
+        if (Page.thread_store) {
+          Page.thread_store.invalidate();
+          if (Page.thread_store.load) RateLimit(500, () => Page.thread_store.load("all"));
+        }
+        if (params && params.type === "new_message" && this.notifyNewMail) {
+          // The node pushes ONE event object per new message; notifyNewMail
+          // expects an array of them.
+          this.notifyNewMail([params]);
+        }
+      } else if (cmd === "setSiteInfo") {
         this.setSiteInfo(params);
       } else if (cmd === "wrapperPopState") {
         // The very first history entry can have a null state; fall back to the
