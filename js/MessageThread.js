@@ -289,6 +289,7 @@
           ]),
           h("textarea.reply-body", {
             placeholder: _("Write a reply..."),
+            autocomplete: "off",
             value: this.reply_body,
             oninput: this.handleReplyInput
           }),

@@ -301,12 +301,17 @@
             type: "text",
             placeholder: _("Subject"),
             name: "subject",
+            // Never feed subjects into the browser's saved form history - a
+            // mail app's past subjects must not resurface as an autofill
+            // dropdown (or persist in the browser profile at all).
+            autocomplete: "off",
             value: this.subject,
             oninput: this.handleInput
           }),
           h("textarea.body", {
             placeholder: _("Message"),
             name: "body",
+            autocomplete: "off",
             value: this.body,
             oninput: this.handleInput
           }),

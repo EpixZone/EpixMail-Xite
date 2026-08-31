@@ -130,7 +130,7 @@
       // Fresh properties object each render: passing the same mutable object
       // makes maquette's previousProperties === properties, so mutations like
       // the placeholder would never reach the DOM.
-      var input_attrs = {};
+      var input_attrs = {autocomplete: "off"};
       for (var k in this.attrs) input_attrs[k] = this.attrs[k];
       return h("div.Autocomplete", {"afterCreate": this.setNode}, [
         h("input.to", input_attrs),

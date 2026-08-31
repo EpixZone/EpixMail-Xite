@@ -77,6 +77,7 @@
             h("input.search", {
               type: "text",
               placeholder: _("Filter contacts"),
+              autocomplete: "off",
               value: this.filter,
               oninput: this.handleFilterInput
             })

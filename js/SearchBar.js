@@ -36,6 +36,7 @@
           h("input.search", {
             type: "text",
             placeholder: _("Search mail"),
+            autocomplete: "off",
             value: query,
             oninput: this.handleInput
           }),
