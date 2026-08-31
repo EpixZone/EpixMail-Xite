@@ -4,13 +4,13 @@
  "background-color": "#F6F6F9",
  "background-color-dark": "#151517",
  "bundles": {
-  "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d": {
-   "seq": 1,
-   "size": 66805
-  },
-  "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a": {
+  "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619": {
    "seq": 0,
-   "size": 223843
+   "size": 224229
+  },
+  "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5": {
+   "seq": 1,
+   "size": 66824
   }
  },
  "description": "End-to-end encrypted P2P messaging",
@@ -35,342 +35,342 @@
  "files": {
   "LICENSE": {
    "b3": "e5d78c01bf8de96db29343a9f6771e6eaf18b2392057cea340d985e9e75fb264",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
    "off": 0,
    "sha512": "e67014a69caa38c58575f333619243c9ebb3c98d462f0b4823ff5ed3d2cfdba3",
    "size": 1077
   },
   "README.md": {
    "b3": "7980edbe0997110812935e84c8e6c644d13112f82809b410d73e5609598a023f",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
    "off": 1077,
    "sha512": "d4cba21ab80203afd60f807a775c52a131411bcc73bdff984343f068f7570f1a",
    "size": 4542
   },
   "css/all.css": {
    "b3": "13199cb8a124b17d0a26450fcbbb936b02c49bec3018ee96e88925f9d8e4d358",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
    "off": 5619,
    "sha512": "c3ec5d66b3690ac51bce3c0a877151525e121b5a1cb2d0a9a3e6d3dbca081275",
    "size": 43555
   },
   "data-default/users/content-default.json": {
    "b3": "776407f2f5bd80c9a918ba75fec77c913143e83407c3528e511d1e2e2fadcf5b",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
    "off": 49174,
    "sha512": "c2ef54ab6532a8e369e61615b898385a067a9b93da933d30d0b5702d515ac585",
    "size": 401
   },
   "dbschema.json": {
    "b3": "b1c44565ba59bed180ee6c47df0c4640a2577537beec3904e7aa83425b42ee05",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
    "off": 49575,
    "sha512": "fe92c4fb93e3e040e7b72cf591cce5eb00241963cc5c18460a825f73a3bc4e4a",
    "size": 264
   },
   "img/logo.svg": {
    "b3": "43d6460e11f0b6dade998f99ace55bb13924508eb0f1bb7549d0d62748bba405",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
    "off": 49839,
    "sha512": "2c90bf189bf979c32c2d57da13b15d1c1fb580f8847e582523c43ce22a425072",
    "size": 437
   },
   "index.html": {
    "b3": "cba71a70d91990d848c333dbd86a9637e88e7c00c66a40d0373b60a3d6bb0409",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
    "off": 50276,
    "sha512": "e9842fbb7a21047ba6b90e078421e290ac0793c56920e70bca57ef97ef390c65",
    "size": 2039
   },
   "js/Channel.js": {
    "b3": "e0492654d0cdd4db361b06615e2ee60f3f3d33fa33ad67692b7e92ccce7d9cea",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 61175,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 61194,
    "sha512": "18c0ed1b9a478ee48813024c37f584912ae8bc71378c643633004dbe734c9f6b",
    "size": 5630
   },
   "js/ContactsPage.js": {
-   "b3": "860df9280a40697af9574d82565c1b7e9859d281769a5fd436abb073d4767684",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
+   "b3": "4be4de2e8b38a270041221fc1edaf54ebf1e018fe35d154fe13de78225adf3dd",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
    "off": 52315,
-   "sha512": "6c7a91051b3414b70205e5f7d96e93c2a13a1a68f0f9f939840b7de3d37d86ca",
-   "size": 3089
+   "sha512": "a00c0dec6438a0aa430d6c6e5a990d8ed28a9ad05c5b9768cc98b919a2db58c2",
+   "size": 3124
   },
   "js/EpixMail.js": {
    "b3": "d063c7dc94750fa8716ffa2a9f98f99bddd9b84fde257c6acd62df9e6228f561",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 55404,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 55439,
    "sha512": "d795490a3b26d41624dbc539e4eb8fa1e748ade3e9e8479043a0046a5c9ded60",
    "size": 19991
   },
   "js/Message.js": {
    "b3": "3e9d78d4d4eaf7458405014243786ece252f2e22954b2cddd56f890b4ce56baf",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 75395,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 75430,
    "sha512": "2edcb0aab3e325b5852eabfef1fc3ddb016514feeb247f772ecec73ab0dfeb4d",
    "size": 6900
   },
   "js/MessageCreate.js": {
-   "b3": "1cfdaf25c87f1eef28512db7a290089aac2ca4859a05300bd22a5187ba741035",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 82295,
-   "sha512": "a52bb576f736ed3b800f5d2561269a62facd1983dd435c502099f16fa0262f9e",
-   "size": 11711
+   "b3": "a19bbd9b136e74ebbf8c76fb15a1584a1238e6a9982eabef0885ac4604cdf6c8",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 82330,
+   "sha512": "90f2818eb32360bf6bcf55b6a9ee1ffc10e8ef3f405b4a54d0c0a099b9441086",
+   "size": 11996
   },
   "js/MessageList.js": {
    "b3": "59debdf1c58cfb00370b1dd802118593f2d8d1c6c43018e2e1b8575003a54a6e",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 94006,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 94326,
    "sha512": "8ee6a6c236398dc5d264ec927aa70b2d5d1c517166ab2413153621b91716662f",
    "size": 4929
   },
   "js/MessageListSent.js": {
    "b3": "e85a7f1e651831c9b49c1b773235d4a437bfb127941574713ecf2318b413441e",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 98935,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 99255,
    "sha512": "cb9482169179477b0d5118e710c42b9b46270e6c12bb1a7a5711d87f5bc302a9",
    "size": 919
   },
   "js/MessageListThreads.js": {
    "b3": "0a7d892964106a88b9f9904b14a5f93370de4a5004406efeb865823eaf98c1d5",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 99854,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 100174,
    "sha512": "bd70aaa930ae38d368f7e0c194f50315b9f20e32944d58ee2646f0cf38f02738",
    "size": 670
   },
   "js/MessageLists.js": {
    "b3": "e0cca8ca3c73d6eb2f245b063a8a88fc4821c0b7c64de3e34cd6bc9e61a9dfbb",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 100524,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 100844,
    "sha512": "49d2b64bdfdd48f25e646b7f3013d0c901fe8338c85746baf750bf2a35936024",
    "size": 1053
   },
   "js/MessageThread.js": {
-   "b3": "29c7ac5da193f45733916b335b2abc1fa157b6248bdf4ef13fa741116df7ecee",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 101577,
-   "sha512": "cfb3534e290c1ed37c18c67e00d005eaef6791b1c7604b274c5c0a12d39900aa",
-   "size": 11804
+   "b3": "d243acb30329ba3e9ea721dafb10cd922e0464b13cc31a55f5799804b4ca00ba",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 101897,
+   "sha512": "bd99c031f2d37778c6b322486ff5a7c1264c0cfc2807354cdd8ea61e20c553f6",
+   "size": 11837
   },
   "js/SearchBar.js": {
-   "b3": "ba027c79ec828ecad1ad9dd2d16d75e57ded7e3a222967d91521a0f97f075387",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 113381,
-   "sha512": "8af58753a2fb16fb63b0d03910784324579254d5faf838860388444c3756d6fa",
-   "size": 1669
+   "b3": "157c4dc8256bcbb0e0caff59f7305307b30e619a76c39ee37e6614916a4e3b2e",
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 113734,
+   "sha512": "26f5b3c6ee2c85ab004659047a6b48ccf00da910da94c52829ed41994ca0333e",
+   "size": 1702
   },
   "js/SettingsPage.js": {
    "b3": "7cbc586335f1a61acf60df5f3d94a9699ad896c8787e0d4ca1a149ce1e44939d",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 115050,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 115436,
    "sha512": "e9f22f63aef5da9c595e89f2ead232869ef42875c59b0fcbc30f25079db1238b",
    "size": 3719
   },
   "js/Shell.js": {
    "b3": "6990ab5e5d6127c5d6216de23d2da1b5cd7a1dbaea64de9c36b455d07e9ff2d0",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 118769,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 119155,
    "sha512": "99626376e798b69e5fb89c13755622cc7bc2cd8c69b64c301c525a495efd989f",
    "size": 7449
   },
   "js/StartScreen.js": {
    "b3": "feb2982f548ca247dd626c402c4e44a7cb66ab16430f2dcfde9a1e00438bbfb4",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 126218,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 126604,
    "sha512": "6ddc2e4646162d9635f304332a06499fdd02e88715ab8a0d87c7b981945f0316",
    "size": 3249
   },
   "js/ThreadStore.js": {
    "b3": "06d139b5889bbc582bdcf682cab161b7ec4d9f27bb85cf9819b63ddb7535d400",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 129467,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 129853,
    "sha512": "644d1069d25b86d7dcf14a4db6319d72891fb7c124a5f6b5c998ce5d22a86b95",
    "size": 7473
   },
   "js/User.js": {
    "b3": "1d6086d50815a3cfb6f203ce1f2bc09631247a7dc1a5b7ed73de11f794261415",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 136940,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 137326,
    "sha512": "d03b9a90f76e09a23d146349fc0b4d9b18aafe624f0b3d239c43b4983343189f",
    "size": 3980
   },
   "js/lib/epixframe.js": {
    "b3": "2c64ee3a252a62a15a98b2c31dfc3fbea3c9265d51f6c43801c1a1a926901278",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 140920,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 141306,
    "sha512": "8cb66604615c662afc621127a3ab534d23323ad4bbfe068d9dae7a62fba73ae9",
    "size": 18957
   },
   "js/lib/maquette.js": {
    "b3": "5901012c98e2f2f416aef7b2b458dbc72f269529a696b4de6d50d103534da7b9",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 159877,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 160263,
    "sha512": "791bb1ce7bfa7c6d9b5e6caef1fd1005243ad30be8782d5816af6fcd2a7c189c",
    "size": 44806
   },
   "js/lib/marked.min.js": {
    "b3": "4dc7f0016c3cc2f67e74ba072b3d19037fe22baadb4c70f4f21d6bef5daa4b87",
-   "bundle": "383aa2b0bbd8f74055cc9b45eda41bc581ada5af09be76c448d045ce4932297a",
-   "off": 204683,
+   "bundle": "3a2461a8b19bfc96e5a0525b7f465b2127ed3dcdf1c0b91488780df7ffcf7619",
+   "off": 205069,
    "sha512": "02de304785538b504575f2355fcd5069cb8644fc2eebe5caffb8408b891f1c9d",
    "size": 19160
   },
   "js/utils/Animation.js": {
    "b3": "3c1883ec218de657cd2a1501286a57faf022366178de1ebdc50e93588d7482e9",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
    "off": 0,
    "sha512": "62f505ba8249d8c77a3c0220cdb902635533f79a5eb0b26b2aaa605d4ae6bf5e",
    "size": 4842
   },
   "js/utils/Autocomplete.js": {
-   "b3": "a53d038e3dd24b7b48e69be34d673deb81143813f81fc7024cc06fbe253c7040",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
+   "b3": "d13f8d0c5ada9923b0180864c03fa5c34933f948f28ed7ed62fcad28a9f11d89",
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
    "off": 4842,
-   "sha512": "270ceafb5d4e9ddb8dd85cf8a32d8608035f4d691c861bde5c70f9bbf52373c5",
-   "size": 4845
+   "sha512": "4ee3f028ddbc2d2d7beb534c7e2cdbb5c0be853b4ba474cf3db95d6b53227b55",
+   "size": 4864
   },
   "js/utils/Crypto.js": {
    "b3": "ec0c593539bd3e29e2b6b4e99dd627fac651b96c89213c59f9ea09c761d62d06",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 9687,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 9706,
    "sha512": "96436b32ea47e15e358dece1699b59aeefc17ec9a5bbcb7d4ad86f276f7564db",
    "size": 745
   },
   "js/utils/Deferred.js": {
    "b3": "b8155f41f4e62c6f32419d848197be310495bec16454c733620efbd88aa7cbcf",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 10432,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 10451,
    "sha512": "c75c1e14b75552665ce0f65b2c7bc1fed1b23cb0ee9fd61d92de6de0121cd8e8",
    "size": 1557
   },
   "js/utils/Dollar.js": {
    "b3": "1cc94cecbba4192c574e3e2ea813c04513d8b58cb124f341bc126c7beb749b86",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 11989,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 12008,
    "sha512": "e1e759211746898e0467c1855b071c413a18c94540d8b95cb8113a27c60fbfdf",
    "size": 168
   },
   "js/utils/LogMixin.js": {
    "b3": "e02b2c0d7601b587a0e8eb610cb959d75b6814d15ae5b6ef1db6894ffd1152f3",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 12157,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 12176,
    "sha512": "5d393d9e466748562c1c4c9750d3d013d6e04b887b81998dd9246c841e3fff42",
    "size": 607
   },
   "js/utils/Menu.js": {
    "b3": "af3716245f879bbb81e3c9a3f1295d2147d438a1faa1e83179762fb851f2ec7f",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 12764,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 12783,
    "sha512": "c1d9950e7fbf64017752ce7d662c7d1fc90f9d3fff2116f2afa7696b8a07e5bc",
    "size": 3050
   },
   "js/utils/Prototypes.js": {
    "b3": "8ff72851f2e6a4c3e6188a8327d49d19d4f8393bc3c0081e577dc7303d7778ea",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 15814,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 15833,
    "sha512": "e707f62cce22cd6dc112cc5d1fe9062a695db59e8025d23efa410d7b2a4d6481",
    "size": 548
   },
   "js/utils/RateLimit.js": {
    "b3": "6fbaf14dcc74a3b5ace60bbe57a1106ab5a329fb5cfe5a53cd1bdc5dab903003",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 16362,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 16381,
    "sha512": "8ed47306af19188e2642c0d2004a3d5a602919d123a69e9f71f72290a7275327",
    "size": 791
   },
   "js/utils/Text.js": {
    "b3": "58f8dced3904dde9dd0ed3ae07d67547c5284582b8ac3cce9210d4f3ea74f8b2",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 17153,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 17172,
    "sha512": "f72bebc5839dce423111670d97e2d320f5406dc17dce5ec615a4de8b397dee26",
    "size": 4097
   },
   "js/utils/Time.js": {
    "b3": "e418978e21bdee9c26943a7034dd8353109c8c40684ad24d6199dacf6db989a4",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 21250,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 21269,
    "sha512": "4a9e13400039873cf3be4b65b790720d9d54705da4b46a93d9f2a4ebdf45809d",
    "size": 1402
   },
   "js/utils/Translate.js": {
    "b3": "ab0cf5c94353a2fd52b05a654c0e708c7aacead2d715073588d56ac98659d12f",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 22652,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 22671,
    "sha512": "98f5c2399fa97a056ceeb8ec440437f14ca54648d3ec650778d43cd995407264",
    "size": 684
   },
   "languages/es.json": {
    "b3": "3879632457a3b6f6ab939e3ac2868f3390d34756151753400a76d10c55856091",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 23336,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 23355,
    "sha512": "6e5980fd2c00710de1abd72b7770d6e8a3e6f8c69b33f6213e2ae702175f5530",
    "size": 3641
   },
   "languages/fa.json": {
    "b3": "c987d9ff75349fc4b3945d4a78951e6770510397eba3cf71f7b17f085a2b4de9",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 26977,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 26996,
    "sha512": "d7b8392b9e8858f5adb69ab84883bfa986e7b6420c62ddf0359e7f137576d543",
    "size": 4915
   },
   "languages/it.json": {
    "b3": "5300cfa086addc2daf4120e81fb74cc8754dd18e3f291800166b1476036a3941",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 31892,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 31911,
    "sha512": "c2d152ba6ffa60f49048aba2e7a0ac2a3210698c77f7e5c0315f659d5b7c5e51",
    "size": 3704
   },
   "languages/nl.json": {
    "b3": "03b228c94a8ed99713aa8d659ffccea7dea1f6b8a25905e484c9863d96db2d52",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 35596,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 35615,
    "sha512": "b65c9ff19c9effeb35ae5ab850f741abf522086e0912061ca47e30b189272f65",
    "size": 3686
   },
   "languages/pl.json": {
    "b3": "9383feeace3b59c172dffccf6c1f8d6264ab15735d0c0fbcfb11172126c68a34",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 39282,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 39301,
    "sha512": "cdeeb20f02ee7a05400a2b41516bd8e6119656fbc0f54af349b87986b772094e",
    "size": 3736
   },
   "languages/pt-br.json": {
    "b3": "e6440cdd527bb47326ddff14b06445c5f30c643325cd05f4b36925d8485b6598",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 43018,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 43037,
    "sha512": "db87bab8a33c0044ae148811192ea5f87c22029e6ac576280bbfb1f155266839",
    "size": 3747
   },
   "languages/sk.json": {
    "b3": "00260815b4839fd44ddb123e780b9fbc9e68c13c22f3ccffe5d54cc668ba7fca",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 46765,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 46784,
    "sha512": "bfc91d2b4c28ba064a24ea5b717ceb051c7f3c73308b61ca12ae3418b522af96",
    "size": 3774
   },
   "languages/sl.json": {
    "b3": "63e0537a2fef43d0014a5240819865c3602e78d1981c1b9c33da81b88d2eba61",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 50539,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 50558,
    "sha512": "1f8e8c0370eae2ff44b3fb449ada16ecec815bb8163aee62389d65fd67c5c375",
    "size": 3744
   },
   "languages/zh-tw.json": {
    "b3": "8f719f2989f76dc4f9c27ac44abd119616d5b93950cb8955429982d5a25a60a4",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 54283,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 54302,
    "sha512": "b5686a641a61d4edfb22665bad28ce415b511a387b1a09a6ac7634338ab8798f",
    "size": 3446
   },
   "languages/zh.json": {
    "b3": "823d0ca04f08a02ab98a6627dcd77bffd802d8dbe68431da43d396a56fb07ea6",
-   "bundle": "2e93a43690de6be11e8e8772e64ea588cd3c31eee5df7ea072e4a305b53fc40d",
-   "off": 57729,
+   "bundle": "95fdd1952663e9c7be2e55ac62dc779d3ce88026dbdaf049133ac7895a508aa5",
+   "off": 57748,
    "sha512": "ec6176288fd5109c0e1e2538ea9ea1cb9c7e2a841a78ed13375f914c6a027415",
    "size": 3446
   }
  },
- "files_merkle_root": "4bcec34b9963be241a661380c9bc27f155b1e605065ba1cf92d24fafb6100366",
+ "files_merkle_root": "31067395139c9af1cec6c91a2d6e401025d503eca7e5d70e17ad797687303391",
  "ignore": "(merged-.*|data/users/.*|pool/.*|css/(?!all\\.css)|.*\\.coffee|\\.git)",
  "includes": {
   "data/users/content.json": {
@@ -379,7 +379,7 @@
   }
  },
  "inner_path": "content.json",
- "modified": 1788135957,
+ "modified": 1788138554,
  "notification_icons": {"new_conversations": "img/logo.svg"},
  "order_policy": {
   "first_paint": ["index.html","css/all.css","js/lib/maquette.js","js/lib/marked.min.js","js/lib/epixframe.js","js/utils/LogMixin.js","js/utils/Deferred.js","js/utils/Dollar.js","js/utils/Prototypes.js","js/utils/RateLimit.js","js/utils/Translate.js","js/utils/Animation.js","js/utils/Menu.js","js/utils/Text.js","js/utils/Time.js","js/utils/Autocomplete.js","js/utils/Crypto.js","js/Channel.js","js/User.js","js/ThreadStore.js","js/Message.js","js/MessageList.js","js/MessageListThreads.js","js/MessageListSent.js","js/SearchBar.js","js/MessageLists.js","js/MessageThread.js","js/MessageCreate.js","js/ContactsPage.js","js/SettingsPage.js","js/StartScreen.js","js/Shell.js","js/EpixMail.js"],
@@ -400,7 +400,7 @@
  },
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
- "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "G4qiZcmed50yOO9A2qQyP+uOv4O2uOd7d8Ca+OEYTFRqJoFPjXFMRTuyzP6RWMnBhjiEugB13JrjfEBepmLSIgg="},
+ "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "G6UuBYzFtZyIQNsPwJr0a8YAU24bE6SFRQxZmDbyJbh/D0jUBLelDRRi0eEj7Ejy+4O2aeoAkLm9xPNC4ZKIx54="},
  "signs_required": 1,
  "title": "Epix Mail",
  "viewport": "width=device-width, initial-scale=1"
