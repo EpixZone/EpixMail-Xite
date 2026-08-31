@@ -6,3 +6,4 @@ js/lib/all.js
 *.db-shm
 *.db-wal
 .sign-cache.json
+pool/
