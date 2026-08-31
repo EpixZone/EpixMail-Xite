@@ -378,6 +378,7 @@ input:focus, textarea:focus { border-color: var(--epix-focus); outline: none }
 .rail-logo img { width: 32px; height: 32px; display: block; flex: none }
 .rail-compose { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 4px 16px 4px; min-height: 44px }
 .rail-compose .icon::before { width: 18px; height: 18px }
+.rail-outbox-note { margin: -8px 8px 12px 8px; font-size: 12px; color: var(--muted, #8b90a0); text-align: center; opacity: 0.9 }
 .rail-nav { display: flex; flex-direction: column; gap: 2px }
 .nav-item {
 	display: flex; align-items: center; gap: 12px; padding: 11px 10px; min-height: 44px; box-sizing: border-box;

@@ -15,6 +15,7 @@
       this.body = "";
       this.sending = false;
       this.just_sent = false;
+      this.sent_delivery = null; // "published" | "queued" from the node
       this.to_list = [];  // [{name, checking, valid, reason, seq}]
       this._chip_seq = 0;
       this.node = null;
@@ -150,7 +151,11 @@
     }
 
     getTitle() {
-      if (this.just_sent) return _("Message sent!");
+      if (this.just_sent) {
+        return this.sent_delivery === "queued"
+          ? _("Sent - queued for delivery")
+          : _("Message sent!");
+      }
       return _("New message");
     }
 
@@ -174,6 +179,7 @@
     }
 
     reset() {
+      this.sent_delivery = null;
       this.to_list = [];
       this.subject = "";
       this.body = "";
@@ -238,6 +244,8 @@
         this.sending = false;
         if (res) {
           this.just_sent = true;
+          this.sent_delivery = res.delivery || null;
+          Page.user.onSiteInfo(null); // refresh the queued-for-delivery count
           Page.thread_store.invalidate();
           Page.thread_store.load("noanim");
           setTimeout(() => {

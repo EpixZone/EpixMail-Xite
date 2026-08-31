@@ -150,6 +150,20 @@
       ]);
     }
 
+    // Honest delivery state instead of a publish popup: the node accepts a
+    // send into a durable queue and delivers when peers are reachable; this
+    // line is visible exactly while that queue is non-empty.
+    renderOutboxNote() {
+      var s = Page.user.session;
+      if (!s || !s.outbox_pending) return null;
+      var text = s.outbox_pending === 1
+        ? _("1 message queued for delivery")
+        : s.outbox_pending + " " + _("messages queued for delivery");
+      return h("div.rail-outbox-note", {
+        title: s.outbox_error || _("Will deliver as soon as a peer is reachable")
+      }, [text]);
+    }
+
     renderRail() {
       return h("div.rail", [
         h("a.rail-logo", {href: "?Inbox", onclick: Page.handleLinkClick}, [
@@ -164,6 +178,7 @@
           h("span.icon.icon-compose"),
           h("span.rail-compose-label", _("Compose"))
         ]),
+        this.renderOutboxNote(),
         h("nav.rail-nav", this.getNavItems(true).map(this.renderNavItem)),
         h("div.rail-spacer"),
         this.renderRailAccount()

@@ -11,6 +11,7 @@
       this.reply_body = "";
       this.sending = false;
       this.just_sent = false;
+      this.sent_delivery = null;
       this.marked_read = null;
       this.node = null;
       this._body_renderers = {};
@@ -142,8 +143,11 @@
         if (res) {
           this.reply_body = "";
           this.just_sent = true;
+          this.sent_delivery = res.delivery || null;
+          Page.user.onSiteInfo(null); // refresh the queued-for-delivery count
           setTimeout(() => {
             this.just_sent = false;
+            this.sent_delivery = null;
             Page.projector.scheduleRender();
           }, 3000);
           // The node never echoes our own file_done: refresh explicitly
@@ -284,7 +288,9 @@
           h("div.reply-to", [
             h("span.icon.icon-reply"),
             this.just_sent
-              ? h("span.reply-sent-note", _("Message sent!"))
+              ? h("span.reply-sent-note", this.sent_delivery === "queued"
+                  ? _("Sent - queued for delivery")
+                  : _("Message sent!"))
               : h("span", _("Reply to") + " " + (others.length ? names.slice(0, -1).join(", ") : _("me")))
           ]),
           h("textarea.reply-body", {

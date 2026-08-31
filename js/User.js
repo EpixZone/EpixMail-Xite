@@ -68,6 +68,15 @@
           this.publickey = info && info.key_bundle_published ? true : null;
           this.inited = true;
           this._resolveOnce(true);
+          // While messages sit in the durable outbox, poll so the "queued
+          // for delivery" indicator drains promptly even when delivery
+          // happens with no accompanying site event.
+          if (info && info.outbox_pending > 0 && !this._outbox_poll) {
+            this._outbox_poll = setTimeout(() => {
+              this._outbox_poll = null;
+              this.onSiteInfo(null);
+            }, 20000);
+          }
           if (cb) cb(info);
           Page.projector.scheduleRender();
         })
