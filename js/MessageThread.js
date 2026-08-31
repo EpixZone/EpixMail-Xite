@@ -229,9 +229,14 @@
       if (!thread) {
         return h("div.MessageThread", {key: "thread-missing", afterCreate: this.setNode}, [this.renderNotFound()]);
       }
-      // Opening (or receiving into) the thread marks everything read
+      // Opening the thread marks everything read - but ONLY while the tab is
+      // actually visible. A message arriving into a thread whose view is
+      // merely the last-rendered one (background tab, user off in the Inbox)
+      // must NOT be insta-marked read: that silently swallows the unread
+      // badge and the new-mail notification before the user ever saw them.
+      // When the tab regains visibility this render runs again and marks it.
       var read_key = this.conv_id + ":" + thread.thread_count;
-      if (this.marked_read !== read_key) {
+      if (this.marked_read !== read_key && !document.hidden) {
         this.marked_read = read_key;
         Page.thread_store.markThreadRead(thread);
       }
