@@ -698,7 +698,14 @@ input:focus, textarea:focus { border-color: var(--epix-focus); outline: none }
 
 /* ---- start screen / onboarding ---- */
 
-.StartScreen { display: flex; justify-content: center; padding-top: 6vh }
+/* A banner above the inbox, not a hero that owns the column: visitors can
+   read (an empty inbox) while it explains what sending needs. */
+.StartScreen { display: flex; justify-content: center; padding: 12px 16px 0 }
+.StartScreen .onboarding { max-width: 720px; padding: 18px 20px }
+.StartScreen .onboarding-steps { flex-direction: row; flex-wrap: wrap; gap: 18px; margin-bottom: 12px }
+.StartScreen .onboarding-intro { margin-bottom: 12px }
+.onboarding-error { color: var(--epix-danger); font-size: 13px; margin: 0 0 12px }
+@media (max-width: 640px) { .StartScreen .onboarding-steps { flex-direction: column; gap: 10px } }
 .onboarding {
 	background-color: var(--epix-surface); border: 1px solid var(--epix-border);
 	border-radius: var(--epix-radius-lg); padding: 28px 26px; max-width: 460px; width: 100%;

@@ -34,14 +34,44 @@
       return "data/users/" + dir + "/" + file_name;
     }
 
+    // The bare xID name (no TLD) this xite currently acts as, from the node's
+    // session when it has answered, else from siteInfo. Cleared on every
+    // identity switch (`resetIdentity`), never cached across one.
     getMyXid() {
       if (this.my_xid) return this.my_xid;
+      var identity = this.session && this.session.identity;
+      if (identity && identity.xid) {
+        this.my_xid = identity.xid.replace(/\.epix$/, "");
+        return this.my_xid;
+      }
       var cert = Page.site_info && Page.site_info.cert_user_id;
       if (cert) {
         this.my_xid = cert.replace(/@.*/, "");
         return this.my_xid;
       }
       return null;
+    }
+
+    // Whether the identity's channel setup is still in flight (keys derived or
+    // publishing) rather than done or failed.
+    setupPending() {
+      var setup = this.session && this.session.identity && this.session.identity.setup;
+      return !!setup && (setup.state === "pending" || setup.state === "keys");
+    }
+
+    setupError() {
+      var setup = this.session && this.session.identity && this.session.identity.setup;
+      return setup && setup.state === "failed" ? (setup.error || _("Setup failed")) : null;
+    }
+
+    // Forget everything tied to the previous identity (an account switch).
+    resetIdentity() {
+      this.my_xid = null;
+      this.my_user_dir = null;
+      this.session = null;
+      this.publickey = null;
+      this.inited = false;
+      if (this._setup_poll) { clearTimeout(this._setup_poll); this._setup_poll = null; }
     }
 
     getMyXidDir() {
@@ -65,9 +95,22 @@
         .sessionInfo()
         .then((info) => {
           this.session = info;
-          this.publickey = info && info.key_bundle_published ? true : null;
+          this.my_xid = null;
+          var setup = info && info.identity && info.identity.setup;
+          this.publickey =
+            (setup && setup.state === "published") || (info && info.key_bundle_published)
+              ? true
+              : null;
           this.inited = true;
           this._resolveOnce(true);
+          // While the node is still publishing this identity's keys into the
+          // hub, poll so the banner flips to the inbox the moment it lands.
+          if (this.setupPending() && !this._setup_poll) {
+            this._setup_poll = setTimeout(() => {
+              this._setup_poll = null;
+              this.onSiteInfo(null);
+            }, 3000);
+          }
           // While messages sit in the durable outbox, poll so the "queued
           // for delivery" indicator drains promptly even when delivery
           // happens with no accompanying site event.
@@ -87,19 +130,20 @@
         });
     }
 
-    // Publish this identity's key bundle (onboarding). cb(ok).
+    // Ask the node to (re)run this identity's channel setup, then refresh the
+    // session so the banner shows its progress. cb(ok).
     publishKeyBundle(cb) {
       Page.channel
-        .publishKeyBundle()
+        .identitySetup()
         .then(() => {
-          this.publickey = true;
-          Page.projector.scheduleRender();
-          if (cb) cb(true);
+          this.onSiteInfo(null, () => {
+            if (cb) cb(true);
+          });
         })
         .catch((e) => {
           Page.cmd("wrapperNotification", [
             "error",
-            _("Could not publish your channel keys: ") + (e && e.message),
+            _("Could not set up your channel keys: ") + (e && e.message),
           ]);
           if (cb) cb(false);
         });
