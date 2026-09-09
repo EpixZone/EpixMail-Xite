@@ -1,12 +1,15 @@
 // Channel.js — the client API for metadata-private Epix Mail.
 //
-// This is the ENTIRE data layer of the new Epix Mail. All message crypto,
-// trial-decryption, indexing and search now live in the EpixNet node; the page
-// only calls these thin wrappers over the node's `mail*` WebSocket commands and
-// never sees a key, a ciphertext, or another user's metadata. It replaces the
-// old js/utils/Crypto.js (eciesEncrypt/eciesDecrypt), the messages.json
-// read/write path in User.js, and the plaintext dbQuery discovery in
-// ThreadStore.js.
+// This is the ENTIRE data layer of Epix Mail. All message crypto,
+// trial-decryption, indexing and search live in the EpixNet node; the page
+// only calls these thin wrappers over the node's `channel*` WebSocket commands
+// and never sees a key, a ciphertext, or another user's metadata.
+//
+// Identity: the node holds any number of linked xIDs and each has its own
+// inbox. Every command acts as the identity this xite currently uses (the
+// account menu switches it with `identitySelect`), so nothing here names one.
+// Key bundles are published by the node itself into the channel hub (the xID
+// xite) as part of linking an identity; the page only reports setup state.
 //
 // Every method returns a Promise. `Page` is the EpixFrame instance (window.Page)
 // whose `cmd(name, params, cb)` speaks to the node.
@@ -37,40 +40,38 @@
 
     // --- identity / onboarding -------------------------------------------
 
-    // {enabled, xite, key_bundle_published, unread}
+    // {enabled, xite, hub_ready, identity: null | {auth, xid, enabled,
+    //  setup: {state, error, attempts, next_retry_ms, published_path,
+    //  published_peers}, key_bundle_published, unread, outbox_pending,
+    //  outbox_error}, identities: [{auth, xid, enabled, state, unread}]}.
+    // `identity` is null while this xite browses anonymously.
     async sessionInfo() {
-      this.session = await this._cmd("channelSessionInfo");
+      // Mail reads the mail app only; other xites carry their own apps.
+      this.session = await this._cmd("channelSessionInfo", [{ app: "mail" }]);
       return this.session;
     }
 
-    // Publish this identity's key bundle. The node returns
-    // {xid, auth, primary_path, device_path, bundle}. A name may have several
-    // linked devices, so devices must not clobber a single file: this device
-    // takes the PRIMARY `data.json` slot when it is free or already ours (which
-    // keeps single-device users readable by nodes that only look at data.json),
-    // and its per-device `data-<auth>.json` slot only when a DIFFERENT device
-    // already holds the primary. Returns the written inner_path.
-    async publishKeyBundle() {
-      const res = await this._cmd("channelKeyBundlePublish");
-      let inner = res.primary_path;
-      try {
-        const cur = await this._cmd("fileGet", [res.primary_path]);
-        if (cur) {
-          const held = JSON.parse(cur);
-          // Someone else's device owns data.json → claim our own slot.
-          if (held && held.auth && held.auth !== res.auth) {
-            inner = res.device_path;
-          }
-        }
-      } catch (e) {
-        /* no primary file yet — take it */
-      }
-      await this._cmd("fileWrite", [inner, btoa(JSON.stringify(res.bundle))]);
-      // Object form, NOT positional: sitePublish's positional order is
-      // (privatekey, inner_path, sign), so `[inner]` would be read as a
-      // private key and the root content.json signed instead.
-      await this._cmd("sitePublish", { inner_path: inner });
-      return inner;
+    // (Re)run the node-side setup for the identity this xite acts as: derive
+    // its channel keys and publish its bundle into the hub. Resolves with the
+    // setup object; the worker keeps retrying on its own while `pending`.
+    identitySetup(auth) {
+      return this._cmd("channelIdentitySetup", auth ? [{ auth_address: auth }] : []);
+    }
+
+    // Turn channels on or off for one held identity (off = not indexed, not
+    // badged, not published again).
+    identitySetEnabled(auth, enabled) {
+      return this._cmd("channelIdentitySetEnabled", [auth, !!enabled]);
+    }
+
+    // The Config page's status object for the identity this xite acts as.
+    identityStatus(auth) {
+      return this._cmd("channelIdentityStatus", auth ? [{ auth_address: auth }] : []);
+    }
+
+    // Legacy name: the node publishes the bundle itself now.
+    publishKeyBundle() {
+      return this.identitySetup();
     }
 
     // {"<xid>": {has_bundle: bool}} — whether each recipient can receive mail.
@@ -84,7 +85,7 @@
     // {threads: [...]} newest-first. folder ∈ all|starred|archived.
     threads(folder, offset, limit) {
       return this._cmd("channelThreads", [
-        { folder: folder || "all", offset: offset || 0, limit: limit || 50 },
+        { folder: folder || "all", offset: offset || 0, limit: limit || 50, app: "mail" },
       ]).then((r) => (r && r.threads) || []);
     }
 
@@ -97,7 +98,7 @@
 
     // Full-text search over the local decrypted index.
     search(query, limit) {
-      return this._cmd("channelSearch", [query, limit || 100]).then(
+      return this._cmd("channelSearch", [query, limit || 100, { app: "mail" }]).then(
         (r) => (r && r.results) || []
       );
     }
@@ -137,9 +138,11 @@
 
     // --- live events -----------------------------------------------------
 
-    // The node pushes {cmd:"channelEvent", params:{type, conv_id, from_xid,
-    // subject, snippet, unread}} on new mail / scan progress. Call this from the
-    // app's onRequest handler; `handler` receives the params object.
+    // The node pushes {cmd:"channelEvent", params:{type, identity_id, xid,
+    // auth, app, conv_id, from_xid, subject, snippet, unread}} on new mail,
+    // {type:"setup", xid, state} when an identity's keys land in the hub, and
+    // {type:"migrated", imported} after a legacy import. Events are routed to
+    // this xite only for the identity it currently acts as.
     static isEvent(cmd) {
       return cmd === "channelEvent";
     }

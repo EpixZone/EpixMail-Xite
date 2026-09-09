@@ -13,21 +13,11 @@
    "size": 226510
   }
  },
- "description": "End-to-end encrypted P2P messaging",
+ "description": "End-to-end encrypted mail over EpixNet's anonymous channel pool. The hub (the xID xite) holds key bundles and the pool; this xite is the client.",
  "distribution": {
   "default": {
    "retention": "complete",
    "unit": "package"
-  },
-  "paths": {
-   "data/users/": {
-    "retention": "complete",
-    "unit": "feed"
-   },
-   "pool/": {
-    "retention": "complete",
-    "unit": "package"
-   }
   }
  },
  "edx": 1,
@@ -53,20 +43,6 @@
    "off": 5619,
    "sha512": "1f686045fcc116882b40049a56200cc16dc9222ee9c64583a9494ff9f36652c7",
    "size": 43684
-  },
-  "data-default/users/content-default.json": {
-   "b3": "776407f2f5bd80c9a918ba75fec77c913143e83407c3528e511d1e2e2fadcf5b",
-   "bundle": "aeaf8177676bba531966ba17a7abda8130540a9afb4c9876a182c5e49e58d3a0",
-   "off": 49303,
-   "sha512": "c2ef54ab6532a8e369e61615b898385a067a9b93da933d30d0b5702d515ac585",
-   "size": 401
-  },
-  "dbschema.json": {
-   "b3": "b1c44565ba59bed180ee6c47df0c4640a2577537beec3904e7aa83425b42ee05",
-   "bundle": "aeaf8177676bba531966ba17a7abda8130540a9afb4c9876a182c5e49e58d3a0",
-   "off": 49704,
-   "sha512": "fe92c4fb93e3e040e7b72cf591cce5eb00241963cc5c18460a825f73a3bc4e4a",
-   "size": 264
   },
   "img/logo.svg": {
    "b3": "43d6460e11f0b6dade998f99ace55bb13924508eb0f1bb7549d0d62748bba405",
@@ -371,36 +347,54 @@
   }
  },
  "files_merkle_root": "830fe378ea72994a1d5bb69671ed7d7477c97dd026e65883ce94b480b214f0f0",
- "ignore": "(merged-.*|data/users/.*|pool/.*|css/(?!all\\.css)|.*\\.coffee|\\.git)",
- "includes": {
-  "data/users/content.json": {
-   "signers": [],
-   "signers_required": 1
-  }
- },
+ "ignore": "(merged-.*|css/(?!all\\.css)|.*\\.coffee|\\.git)",
  "inner_path": "content.json",
  "modified": 1788142277,
- "notification_icons": {"new_conversations": "img/logo.svg"},
- "order_policy": {
-  "first_paint": ["index.html","css/all.css","js/lib/maquette.js","js/lib/marked.min.js","js/lib/epixframe.js","js/utils/LogMixin.js","js/utils/Deferred.js","js/utils/Dollar.js","js/utils/Prototypes.js","js/utils/RateLimit.js","js/utils/Translate.js","js/utils/Animation.js","js/utils/Menu.js","js/utils/Text.js","js/utils/Time.js","js/utils/Autocomplete.js","js/utils/Crypto.js","js/Channel.js","js/User.js","js/ThreadStore.js","js/Message.js","js/MessageList.js","js/MessageListThreads.js","js/MessageListSent.js","js/SearchBar.js","js/MessageLists.js","js/MessageThread.js","js/MessageCreate.js","js/ContactsPage.js","js/SettingsPage.js","js/StartScreen.js","js/Shell.js","js/EpixMail.js"],
-  "prefetch": ["dbschema.json"]
+ "notification_icons": {
+  "new_conversations": "img/logo.svg"
  },
- "pool": {
-  "channels": {
-   "class": "epix-pool-1",
-   "dir": "pool",
-   "fanout": 16,
-   "max_record_bytes": 200000,
-   "max_shard_bytes": 6000000,
-   "pad_buckets": [8192,32768,131072],
-   "pow_bits": 20,
-   "since_week": 2953,
-   "sync_order": "newest_first"
-  }
+ "order_policy": {
+  "first_paint": [
+   "index.html",
+   "css/all.css",
+   "js/lib/maquette.js",
+   "js/lib/marked.min.js",
+   "js/lib/epixframe.js",
+   "js/utils/LogMixin.js",
+   "js/utils/Deferred.js",
+   "js/utils/Dollar.js",
+   "js/utils/Prototypes.js",
+   "js/utils/RateLimit.js",
+   "js/utils/Translate.js",
+   "js/utils/Animation.js",
+   "js/utils/Menu.js",
+   "js/utils/Text.js",
+   "js/utils/Time.js",
+   "js/utils/Autocomplete.js",
+   "js/utils/Crypto.js",
+   "js/Channel.js",
+   "js/User.js",
+   "js/ThreadStore.js",
+   "js/Message.js",
+   "js/MessageList.js",
+   "js/MessageListThreads.js",
+   "js/MessageListSent.js",
+   "js/SearchBar.js",
+   "js/MessageLists.js",
+   "js/MessageThread.js",
+   "js/MessageCreate.js",
+   "js/ContactsPage.js",
+   "js/SettingsPage.js",
+   "js/StartScreen.js",
+   "js/Shell.js",
+   "js/EpixMail.js"
+  ]
  },
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
- "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HMnhoYAi3yyH8rlLc5mwqv1svIXMTTt1gNHphJWreyKzbxG/J8xjgQdk3aYQoXQbk/mQ0BBpT4zIF6zBpX75adc="},
+ "signs": {
+  "epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HMnhoYAi3yyH8rlLc5mwqv1svIXMTTt1gNHphJWreyKzbxG/J8xjgQdk3aYQoXQbk/mQ0BBpT4zIF6zBpX75adc="
+ },
  "signs_required": 1,
  "title": "Epix Mail",
  "viewport": "width=device-width, initial-scale=1"

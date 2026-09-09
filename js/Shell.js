@@ -18,8 +18,12 @@
     }
 
     handleComposeClick() {
-      if (!Page.site_info || !Page.site_info.cert_user_id || !Page.user.publickey) {
-        Page.cmd("wrapperNotification", ["info", _("Choose your xID and generate your keys first")]);
+      if (!Page.site_info || !Page.site_info.cert_user_id) {
+        Page.cmd("wrapperNotification", ["info", _("Connect an xID to send mail")]);
+        return false;
+      }
+      if (!Page.user.publickey) {
+        Page.cmd("wrapperNotification", ["info", _("Your channel keys are still being published, one moment")]);
         return false;
       }
       Page.message_create.show();
@@ -31,6 +35,14 @@
       return false;
     }
 
+    // Switch this xite to another held identity (per xite: other xites keep
+    // theirs). The node answers with a cert_changed siteInfo that resets the
+    // page to the new inbox.
+    selectIdentity(auth) {
+      Page.cmd("identitySelect", {auth_address: auth}, function() {});
+      return false;
+    }
+
     handleSettingsClick() {
       Page.navigate("?Settings");
       return false;
@@ -38,12 +50,22 @@
 
     buildAccountMenu(menu) {
       menu.items = [];
+      var identities = (Page.site_info && Page.site_info.identities) || [];
+      var current = Page.site_info && Page.site_info.auth_address;
       if (Page.site_info && Page.site_info.cert_user_id) {
         menu.items.push([_("Settings"), this.handleSettingsClick]);
-        menu.items.push([_("Switch account"), this.handleSelectUserClick]);
-      } else {
-        menu.items.push([_("Select account"), this.handleSelectUserClick]);
       }
+      // Every identity this node holds; the one in use is marked.
+      for (var i = 0; i < identities.length; i++) {
+        (function(shell, identity) {
+          var label = (identity.auth_address === current ? "\u2713 " : "") + _("Use ") + identity.xid;
+          menu.items.push([label, function() { return shell.selectIdentity(identity.auth_address); }]);
+        })(this, identities[i]);
+      }
+      if (identities.length && Page.site_info.cert_user_id) {
+        menu.items.push([_("Read as a visitor"), function() { return Page.shell.selectIdentity(""); }]);
+      }
+      menu.items.push([identities.length ? _("Link another identity") : _("Connect your xID"), this.handleSelectUserClick]);
     }
 
     handleAccountRailClick() {

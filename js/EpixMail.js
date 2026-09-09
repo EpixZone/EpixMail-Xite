@@ -58,8 +58,9 @@
       }, 60 * 1000);
     }
 
-    // The start screen owns the main column until the visitor has an xID
-    // identity and published mail keys
+    // The onboarding banner sits above the inbox until this xite acts as an
+    // xID whose channel keys are published. Reading works meanwhile (a
+    // visitor sees an empty inbox); sending needs the identity.
     needStartScreen() {
       if (!this.site_info) return true;
       if (!this.site_info.cert_user_id) return true;
@@ -72,10 +73,9 @@
       if (!this.site_info) {
         return h("div#Content");
       }
+      var banner = this.needStartScreen() && this.view !== "settings" ? start_screen.render() : null;
       var body;
-      if (this.needStartScreen()) {
-        body = start_screen.render();
-      } else if (this.view === "thread") {
+      if (this.view === "thread") {
         body = this.message_thread.render();
       } else if (this.view === "contacts") {
         body = this.contacts_page.render();
@@ -84,7 +84,7 @@
       } else {
         body = this.message_lists.render();
       }
-      return h("div#Content", [body]);
+      return h("div#Content", [banner, body]);
     }
 
     route(query) {
@@ -407,8 +407,24 @@
     onRequest(cmd, message) {
       var params = message.params;
       if (cmd === "channelEvent") {
-        // The node pushes {type, conv_id, from_xid, subject, snippet, unread}
-        // on new mail. Refresh the thread list and fire a desktop notification.
+        // Another app's traffic (a Talk DM, say) is not mail.
+        if (params && params.app && params.app !== "mail") {
+          return;
+        }
+        // The node routes events to this xite for the identity it acts as; a
+        // stale event for another identity (a switch racing a push) is dropped.
+        var mine = this.user.getMyXid && this.user.getMyXid();
+        if (params && params.xid && mine && Crypto.normalizeXid(params.xid) !== Crypto.normalizeXid(mine)) {
+          return;
+        }
+        if (params && params.type === "setup") {
+          // This identity's keys landed in the hub: the banner gives way.
+          this.user.onSiteInfo(null);
+          return;
+        }
+        // {type, conv_id, from_xid, subject, snippet, unread} on new mail, or
+        // {type:"migrated"} after a legacy import: refresh the thread list and
+        // fire a desktop notification.
         if (Page.thread_store) {
           Page.thread_store.invalidate();
           if (Page.thread_store.load) RateLimit(500, () => Page.thread_store.load("all"));
@@ -451,6 +467,9 @@
 
       if (site_info.event && site_info.event[0] === "cert_changed") {
         this.getLocalStorage();
+        // Another identity (or none): nothing cached for the previous one may
+        // survive - its name, its session, its threads.
+        this.user.resetIdentity();
         this.user.onSiteInfo(site_info);
         this.thread_store.reset();
         // New identity: drop the previous account's cached notification state so
