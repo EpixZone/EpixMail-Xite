@@ -89,6 +89,15 @@
       ]).then((r) => (r && r.threads) || []);
     }
 
+    // {messages: [...]} newest-first: my own sent messages across every
+    // conversation, flat per-message rows (msg_id, conv_id, subject, body,
+    // sent_ms, members, peer_xid).
+    sent(offset, limit) {
+      return this._cmd("channelSent", [
+        { offset: offset || 0, limit: limit || 50, app: "mail" },
+      ]).then((r) => (r && r.messages) || []);
+    }
+
     // {messages: [...]} oldest-first for one conversation.
     conversation(convId) {
       return this._cmd("channelConversation", [{ conv_id: convId }]).then(
