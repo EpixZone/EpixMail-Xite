@@ -89,15 +89,50 @@
       };
     }
 
+    // Sent: one flat row per message I wrote, from the node's private index
+    // (`channelSent`). Same shape the row renderer expects for
+    // folder === "sent": immutable key, members, subject, body, date_added.
+    _mapSent(m) {
+      var members = [];
+      if (m.members) {
+        try {
+          members = JSON.parse(m.members) || [];
+        } catch (e) {
+          members = [];
+        }
+      }
+      if (!members.length && m.peer_xid) members = [m.peer_xid];
+      return {
+        key: "sent-" + m.msg_id,
+        msg_id: m.msg_id,
+        conv_id: m.conv_id,
+        members: members,
+        subject: m.subject || "",
+        body: m.body || "",
+        from_xid: Page.user.getMyXid(),
+        date_added: m.sent_ms || 0,
+        thread_count: 1,
+        starred: false,
+        unread: 0,
+        folder: "sent",
+        thread_messages: null,
+      };
+    }
+
     load(mode, cb) {
       var folder = this._folderFor(mode);
       var gen = this.gen;
       this.loading = true;
       var limit = this.nolimit ? 5000 : this.conv_limit * this.pages;
-      Page.channel
-        .threads(folder, 0, limit)
-        .then((rows) => {
+      // The Sent folder is a different list (my own messages, flat), not a
+      // filter over the threads like every other folder. Fetch both on every
+      // load: the list is small, switching folders is instant, and a send or
+      // a new_message reload refreshes Sent too.
+      Promise.all([Page.channel.threads(folder, 0, limit), Page.channel.sent(0, limit)])
+        .then((res) => {
           if (gen !== this.gen) return;
+          var rows = res[0];
+          this.sent_rows = (res[1] || []).map((m) => this._mapSent(m));
           this.threads = rows.map((r) => this._mapThread(r));
           this.has_more = rows.length >= limit;
           this.loaded = true;
