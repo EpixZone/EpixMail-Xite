@@ -72,7 +72,7 @@
           h("p.onboarding-intro", [
             _("Encrypted mail exchanged through EpixNet peers."), " ",
             _("Your connected EpixNet node handles message encryption and decryption. Use a node you trust."), " ",
-            _("You can read as a visitor; sending needs an xID.")
+            _("Connect your xID to open your mailbox and send messages.")
           ]),
           h("div.onboarding-steps", [
             this.renderStep(1, _("Connect your xID"), state.cert, !state.cert),
