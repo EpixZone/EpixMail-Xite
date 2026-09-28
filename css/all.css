@@ -700,7 +700,9 @@ input:focus, textarea:focus { border-color: var(--epix-focus); outline: none }
 
 /* A banner above the inbox, not a hero that owns the column: visitors can
    read (an empty inbox) while it explains what sending needs. */
-.StartScreen { display: flex; justify-content: center; padding: 12px 16px 0 }
+/* Bottom padding matches the sides: without it the card sat flush against
+   the search bar below. */
+.StartScreen { display: flex; justify-content: center; padding: 12px 16px 16px }
 .StartScreen .onboarding { max-width: 720px; padding: 18px 20px }
 .StartScreen .onboarding-steps { flex-direction: row; flex-wrap: wrap; gap: 18px; margin-bottom: 12px }
 .StartScreen .onboarding-intro { margin-bottom: 12px }
