@@ -12,7 +12,7 @@
     }
 
     update() {
-      Page.thread_store.load();
+      Page.thread_store.invalidateContacts();
     }
 
     displayXid(name) {

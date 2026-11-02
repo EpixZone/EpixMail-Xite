@@ -27,6 +27,7 @@
       this.pages = 1;
       this.gen = 0;
       this._contacts = [];
+      this._contactsRequest = null;
       this._junk = {};
       this._loaded_resolved = false;
       this.on_loaded = new Deferred();
@@ -34,10 +35,14 @@
 
     invalidate() {
       this.dirty = true;
+      this.invalidateContacts();
     }
 
     reset() {
       this.gen += 1;
+      this._contacts = [];
+      this.invalidateContacts();
+      this._junk = {};
       this.threads = [];
       this.sent_rows = [];
       this.loaded = false;
@@ -57,18 +62,25 @@
       return "all";
     }
 
-    _mapThread(r) {
-      var peer = r.peer_xid || "";
-      // The node stores the full participant list (JSON) for N-person threads.
-      var members = [];
-      if (r.members) {
+    _members(row) {
+      var members = row.members;
+      if (typeof members === "string") {
         try {
-          members = JSON.parse(r.members) || [];
+          members = JSON.parse(members);
         } catch (e) {
-          members = [];
+          members = null;
         }
       }
-      if (!members.length && peer) members = [peer];
+      var names = Array.isArray(members)
+        ? members.filter((name) => typeof name === "string" && name.trim())
+        : [];
+      if (!names.length && typeof row.peer_xid === "string") return [row.peer_xid];
+      return names;
+    }
+
+    _mapThread(r) {
+      var peer = r.peer_xid || "";
+      var members = this._members(r);
       return {
         key: "conv-" + r.conv_id,
         conv_id: r.conv_id,
@@ -93,15 +105,7 @@
     // (`channelSent`). Same shape the row renderer expects for
     // folder === "sent": immutable key, members, subject, body, date_added.
     _mapSent(m) {
-      var members = [];
-      if (m.members) {
-        try {
-          members = JSON.parse(m.members) || [];
-        } catch (e) {
-          members = [];
-        }
-      }
-      if (!members.length && m.peer_xid) members = [m.peer_xid];
+      var members = this._members(m);
       return {
         key: "sent-" + m.msg_id,
         msg_id: m.msg_id,
@@ -240,15 +244,43 @@
       Page.projector.scheduleRender();
     }
 
+    invalidateContacts() {
+      this._contactsRequest = null;
+    }
+
     getContacts() {
-      Page.channel
-        .contacts()
-        .then((list) => {
-          this._contacts = (list || []).map((c) => c.xid);
-          Page.projector.scheduleRender();
-        })
-        .catch(() => {});
+      var mine = Crypto.normalizeXid(Page.user.getMyXid());
+      if (mine && !this._contactsRequest) {
+        var request = {};
+        this._contactsRequest = request;
+        this._loadContacts(mine, request).catch(() => {
+          if (this._contactsRequest === request) this.invalidateContacts();
+        });
+      }
       return this._contacts;
+    }
+
+    async _loadContacts(mine, request) {
+      // Outgoing mail keeps its recipients in members, even before anyone
+      // replies. Older incoming threads can have only a peer_xid.
+      var names = new Set();
+      var limit = 100;
+      for (var folder of ["all", "archived"]) {
+        for (var offset = 0; ; offset += limit) {
+          var rows = await Page.channel.threads(folder, offset, limit);
+          if (this._contactsRequest !== request) return;
+          for (var row of rows) {
+            for (var name of [...this._members(row), row.peer_xid]) {
+              if (typeof name !== "string" || !name.trim()) continue;
+              var xid = Crypto.normalizeXid(name);
+              if (xid !== ".epix" && xid !== mine) names.add(xid);
+            }
+          }
+          if (rows.length < limit) break;
+        }
+      }
+      this._contacts = Array.from(names).sort();
+      Page.projector.scheduleRender();
     }
 
     resolveAvatars() {

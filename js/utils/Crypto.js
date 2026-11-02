@@ -12,7 +12,7 @@
     // "alice" / "alice." / "alice.epix" -> "alice.epix"
     normalizeXid: function (xid) {
       if (!xid) return xid;
-      xid = String(xid).trim().replace(/\.+$/, "");
+      xid = String(xid).trim().toLowerCase().replace(/\.+$/, "");
       return xid.endsWith(".epix") ? xid : xid + ".epix";
     },
   };
