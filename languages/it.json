@@ -16,6 +16,7 @@
 	"Contacts": "Contatti",
 	"Conversation": "Conversazione",
 	"Conversation not found": "Conversazione non trovata",
+	"Could not verify {xid}. Remove it and try again.": "Impossibile verificare {xid}. Rimuovilo e riprova.",
 	"Decrypting your mailbox...": "Decifratura della tua casella di posta...",
 	"Delete": "Elimina",
 	"Encrypt & Send": "Cifra e invia",
@@ -38,6 +39,7 @@
 	"New message": "Nuovo messaggio",
 	"No conversations yet": "Ancora nessuna conversazione",
 	"No matching contacts": "Nessun contatto corrispondente",
+	"No registered xID named {xid}.": "Nessun xID registrato con il nome {xid}.",
 	"No results for": "Nessun risultato per",
 	"No servers, no accounts - just your xID.": "Niente server, niente account - solo il tuo xID.",
 	"Not spam": "Non è spam",
@@ -53,6 +55,7 @@
 	"Select your account": "Seleziona il tuo account",
 	"Send your first message": "Invia il tuo primo messaggio",
 	"Sent": "Inviata",
+	"Separate xIDs with a space or comma.": "Separa gli xID con uno spazio o una virgola.",
 	"Show {n} earlier messages": "Mostra {n} messaggi precedenti",
 	"Signing failed": "Firma non riuscita",
 	"Star": "Aggiungi stella",
@@ -72,6 +75,7 @@
 	"me": "io",
 	"no mail keys": "nessuna chiave di posta",
 	"not found": "non trovato",
+	"unverified": "non verificato",
 	"xID name (e.g. bob)": "nome xID (es. bob)",
 	"xID not found": "xID non trovato"
 }

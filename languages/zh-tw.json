@@ -16,6 +16,7 @@
 	"Contacts": "通訊錄",
 	"Conversation": "對話",
 	"Conversation not found": "找不到對話",
+	"Could not verify {xid}. Remove it and try again.": "無法驗證 {xid}。請將其移除後再試一次。",
 	"Decrypting your mailbox...": "正在解密你的信箱...",
 	"Delete": "刪除",
 	"Encrypt & Send": "加密並傳送",
@@ -38,6 +39,7 @@
 	"New message": "新訊息",
 	"No conversations yet": "還沒有對話",
 	"No matching contacts": "沒有符合的聯絡人",
+	"No registered xID named {xid}.": "沒有名為 {xid} 的已註冊 xID。",
 	"No results for": "找不到結果：",
 	"No servers, no accounts - just your xID.": "沒有伺服器，沒有帳戶 - 只需你的 xID。",
 	"Not spam": "不是垃圾郵件",
@@ -53,6 +55,7 @@
 	"Select your account": "選擇你的帳戶",
 	"Send your first message": "傳送你的第一則訊息",
 	"Sent": "寄件匣",
+	"Separate xIDs with a space or comma.": "請用空格或半形逗號分隔多個 xID。",
 	"Show {n} earlier messages": "顯示更早的 {n} 則訊息",
 	"Signing failed": "簽章失敗",
 	"Star": "加星號",
@@ -72,6 +75,7 @@
 	"me": "我",
 	"no mail keys": "沒有郵件金鑰",
 	"not found": "找不到",
+	"unverified": "未驗證",
 	"xID name (e.g. bob)": "xID 名稱（例如 bob）",
 	"xID not found": "找不到 xID"
 }

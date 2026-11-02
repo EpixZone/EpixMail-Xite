@@ -16,6 +16,7 @@
 	"Contacts": "Stiki",
 	"Conversation": "Pogovor",
 	"Conversation not found": "Pogovor ni bil najden",
+	"Could not verify {xid}. Remove it and try again.": "Preverjanje {xid} ni uspelo. Odstranite ga in poskusite znova.",
 	"Decrypting your mailbox...": "Dešifriranje vašega poštnega predala...",
 	"Delete": "Izbriši",
 	"Encrypt & Send": "Šifriraj in pošlji",
@@ -38,6 +39,7 @@
 	"New message": "Novo sporočilo",
 	"No conversations yet": "Ni še pogovorov",
 	"No matching contacts": "Ni ujemajočih se stikov",
+	"No registered xID named {xid}.": "Noben xID z imenom {xid} ni registriran.",
 	"No results for": "Ni rezultatov za",
 	"No servers, no accounts - just your xID.": "Brez strežnikov, brez računov - samo vaš xID.",
 	"Not spam": "Ni neželeno",
@@ -53,6 +55,7 @@
 	"Select your account": "Izberite svoj račun",
 	"Send your first message": "Pošljite svoje prvo sporočilo",
 	"Sent": "Poslano",
+	"Separate xIDs with a space or comma.": "Identifikatorje xID ločite s presledkom ali vejico.",
 	"Show {n} earlier messages": "Prikaži {n} starejših sporočil",
 	"Signing failed": "Podpisovanje ni uspelo",
 	"Star": "Označi z zvezdico",
@@ -72,6 +75,7 @@
 	"me": "jaz",
 	"no mail keys": "ni poštnih ključev",
 	"not found": "ni najdeno",
+	"unverified": "nepreverjeno",
 	"xID name (e.g. bob)": "ime xID (npr. bob)",
 	"xID not found": "xID ni bil najden"
 }

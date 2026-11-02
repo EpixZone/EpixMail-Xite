@@ -16,6 +16,7 @@
 	"Contacts": "مخاطبین",
 	"Conversation": "گفتگو",
 	"Conversation not found": "گفتگو پیدا نشد",
+	"Could not verify {xid}. Remove it and try again.": "تأیید {xid} ممکن نشد. آن را حذف کنید و دوباره تلاش کنید.",
 	"Decrypting your mailbox...": "در حال رمزگشایی صندوق پستی شما...",
 	"Delete": "حذف",
 	"Encrypt & Send": "رمزگذاری و ارسال",
@@ -38,6 +39,7 @@
 	"New message": "پیام جدید",
 	"No conversations yet": "هنوز گفتگویی وجود ندارد",
 	"No matching contacts": "مخاطب مطابقی یافت نشد",
+	"No registered xID named {xid}.": "هیچ xIDای با نام {xid} ثبت نشده است.",
 	"No results for": "نتیجه‌ای یافت نشد برای",
 	"No servers, no accounts - just your xID.": "بدون سرور، بدون حساب - فقط xID شما.",
 	"Not spam": "هرزنامه نیست",
@@ -53,6 +55,7 @@
 	"Select your account": "حساب خود را انتخاب کنید",
 	"Send your first message": "اولین پیام خود را ارسال کنید",
 	"Sent": "صندوق ارسالی",
+	"Separate xIDs with a space or comma.": "xIDها را با فاصله یا ویرگول جدا کنید.",
 	"Show {n} earlier messages": "نمایش {n} پیام قبلی",
 	"Signing failed": "امضا ناموفق بود",
 	"Star": "ستاره‌دار کردن",
@@ -72,6 +75,7 @@
 	"me": "من",
 	"no mail keys": "کلید ایمیل وجود ندارد",
 	"not found": "پیدا نشد",
+	"unverified": "تأییدنشده",
 	"xID name (e.g. bob)": "نام xID (مثلاً bob)",
 	"xID not found": "xID پیدا نشد"
 }

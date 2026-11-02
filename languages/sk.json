@@ -16,6 +16,7 @@
 	"Contacts": "Kontakty",
 	"Conversation": "Konverzácia",
 	"Conversation not found": "Konverzácia sa nenašla",
+	"Could not verify {xid}. Remove it and try again.": "Nepodarilo sa overiť {xid}. Odstráňte ho a skúste to znova.",
 	"Decrypting your mailbox...": "Dešifruje sa vaša schránka...",
 	"Delete": "Vymazať",
 	"Encrypt & Send": "Zašifrovať a odoslať",
@@ -38,6 +39,7 @@
 	"New message": "Nová správa",
 	"No conversations yet": "Zatiaľ žiadne konverzácie",
 	"No matching contacts": "Žiadne zodpovedajúce kontakty",
+	"No registered xID named {xid}.": "Žiadne xID s názvom {xid} nie je zaregistrované.",
 	"No results for": "Žiadne výsledky pre",
 	"No servers, no accounts - just your xID.": "Žiadne servery, žiadne účty - iba váš xID.",
 	"Not spam": "Nie je spam",
@@ -53,6 +55,7 @@
 	"Select your account": "Vyberte si svoj účet",
 	"Send your first message": "Pošlite svoju prvú správu",
 	"Sent": "Odoslané",
+	"Separate xIDs with a space or comma.": "Identifikátory xID oddeľte medzerou alebo čiarkou.",
 	"Show {n} earlier messages": "Zobraziť {n} predchádzajúcich správ",
 	"Signing failed": "Podpisovanie zlyhalo",
 	"Star": "Označiť hviezdičkou",
@@ -72,6 +75,7 @@
 	"me": "ja",
 	"no mail keys": "žiadne poštové kľúče",
 	"not found": "nenájdené",
+	"unverified": "neoverené",
 	"xID name (e.g. bob)": "názov xID (napr. bob)",
 	"xID not found": "xID sa nenašiel"
 }
