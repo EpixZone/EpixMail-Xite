@@ -28,7 +28,7 @@
       this.setNode = this.setNode.bind(this);
       this.autocomplete = new Autocomplete(
         () => this.getContactNames(),
-        {placeholder: ""},
+        {placeholder: "", autocapitalize: "none", autocorrect: "off", spellcheck: false},
         (value) => {
           if (value) this.addRecipient(value);
           this.autocomplete.attrs.value = "";
@@ -75,7 +75,7 @@
     }
 
     addRecipient(name) {
-      name = this.stripTld((name || "").trim().replace(/,/g, ""));
+      name = this.stripTld((name || "").trim().replace(/,/g, "").toLowerCase());
       if (!name) return;
       for (var i = 0; i < this.to_list.length; i++) {
         if (this.to_list[i].name === name) return;

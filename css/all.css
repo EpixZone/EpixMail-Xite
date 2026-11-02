@@ -606,7 +606,7 @@ input:focus, textarea:focus { border-color: var(--epix-focus); outline: none }
 .composer-modal {
 	background-color: var(--epix-surface); border: 1px solid var(--epix-border);
 	border-radius: var(--epix-radius-lg); width: 620px; max-width: 100%; box-shadow: var(--epix-shadow);
-	display: flex; flex-direction: column; max-height: 86vh; overflow: hidden
+	display: flex; flex-direction: column; max-height: 86vh; overflow: auto
 }
 .composer-head {
 	display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -662,12 +662,13 @@ input:focus, textarea:focus { border-color: var(--epix-focus); outline: none }
 }
 .composer-modal input.subject:focus { border-color: var(--epix-border); border-bottom-color: var(--epix-focus) }
 .composer-modal textarea.body {
-	border: none; border-radius: 0; padding: 14px 16px; min-height: 200px; resize: none;
-	flex: 1 1 auto; font-size: 15px
+	border: none; border-radius: 0; padding: 14px 16px; min-height: 4em; resize: none;
+	flex: 1 1 200px; font-size: 15px
 }
 .composer-foot {
 	display: flex; align-items: center; gap: 10px; padding: 12px 16px;
-	border-top: 1px solid var(--epix-border); flex: none
+	border-top: 1px solid var(--epix-border); flex: none;
+	position: sticky; bottom: 0; background-color: var(--epix-surface)
 }
 .button-send { margin-left: auto; min-width: 160px }
 

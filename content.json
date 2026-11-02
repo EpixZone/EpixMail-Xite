@@ -367,5 +367,5 @@
  "signs": {"epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa": "HKf0FobIv8cMhc+K+hTU6pDahOJUoqIR3GKSfD+J0K1IewyzK0sLXkPI9tljq8q76oyKXqAQlk6bY3l4+XOqka0="},
  "signs_required": 1,
  "title": "Epix Mail",
- "viewport": "width=device-width, initial-scale=1"
+ "viewport": "width=device-width, initial-scale=1, interactive-widget=resizes-content"
 }

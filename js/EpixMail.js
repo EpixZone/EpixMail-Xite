@@ -307,7 +307,7 @@
     }
 
     onOpenWebsocket(e) {
-      this.cmd("wrapperSetViewport", "width=device-width, initial-scale=1");
+      this.cmd("wrapperSetViewport", "width=device-width, initial-scale=1, interactive-widget=resizes-content");
       // The node owns the private index, feeds and notifications now; the page
       // talks to it only through the channel API. No SQL over shared data.
       // Already created in createProjector(); only make one if missing (e.g. a
