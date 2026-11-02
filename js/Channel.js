@@ -112,10 +112,6 @@
       );
     }
 
-    contacts() {
-      return this._cmd("channelContacts");
-    }
-
     // --- writing ---------------------------------------------------------
 
     // Seal + post a message. `recipients` is an array of xIDs; `convId` (hex)

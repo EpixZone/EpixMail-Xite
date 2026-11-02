@@ -37,38 +37,29 @@
     }
 
     filterValues(filter) {
-      var current_value = this.attrs.value;
-      var values = this.getValues();
-      var re_highlight = new RegExp("^(.*?)(" + filter.split("").join(")(.*?)(") + ")(.*?)$", "i");
-      var res = [];
-      for (var vi = 0; vi < values.length; vi++) {
-        var value = values[vi];
-        var distance = Text.distance(value, current_value);
-        if (distance !== false) {
-          var match = value.match(re_highlight);
-          if (!match) continue;
-          var parts = match.map(function(part, i) {
-            if (i % 2 === 0) {
-              return "<b>" + part + "</b>";
-            } else {
-              return part;
-            }
-          });
-          parts.shift();
-          res.push([parts.join(""), distance]);
-        }
+      var matches = [];
+      for (var value of this.getValues()) {
+        var distance = Text.distance(value, filter);
+        if (distance !== false) matches.push({value: value, distance: distance});
       }
-
-      res.sort(function(a, b) {
-        return a[1] - b[1];
-      });
-
-      this.values = res.slice(0, 10).map(function(row) { return row[0]; });
+      matches.sort((a, b) => a.distance - b.distance);
+      this.values = matches.slice(0, 10).map((match) => match.value);
       return this.values;
     }
 
-    renderValue(node, projector_options, children, attrs) {
-      node.innerHTML = attrs.key;
+    highlightedName(value, filter) {
+      var children = [];
+      var start = 0;
+      var next = 0;
+      for (var i = 0; i < value.length && next < filter.length; i++) {
+        if (value[i].toLocaleLowerCase() !== filter[next].toLocaleLowerCase()) continue;
+        if (i > start) children.push(value.slice(start, i));
+        children.push(h("b", {key: i}, value[i]));
+        start = i + 1;
+        next++;
+      }
+      children.push(value.slice(start));
+      return children;
     }
 
     handleInput(e) {
@@ -138,10 +129,9 @@
           this.filterValues(this.attrs.value).map((value, i) => {
             return h("a.value", {
               "href": "#Select+Address", "key": value, "tabindex": "-1",
-              "afterCreate": this.renderValue,
               "onmousedown": this.handleClick,
               "classes": {"selected": this.selected_index === i}
-            });
+            }, this.highlightedName(value, this.attrs.value));
           })
         ]) : null
       ]);
