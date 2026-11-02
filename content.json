@@ -360,7 +360,7 @@
  "modified": 1789181291,
  "notification_icons": {"new_conversations": "img/logo.svg"},
  "order_policy": {
-  "first_paint": ["index.html","css/all.css","js/lib/maquette.js","js/lib/marked.min.js","js/lib/epixframe.js","js/utils/LogMixin.js","js/utils/Deferred.js","js/utils/Dollar.js","js/utils/Prototypes.js","js/utils/RateLimit.js","js/utils/Translate.js","js/utils/Animation.js","js/utils/Menu.js","js/utils/Text.js","js/utils/Time.js","js/utils/Autocomplete.js","js/utils/Crypto.js","js/Channel.js","js/User.js","js/ThreadStore.js","js/Message.js","js/MessageList.js","js/MessageListThreads.js","js/MessageListSent.js","js/SearchBar.js","js/MessageLists.js","js/MessageThread.js","js/MessageCreate.js","js/ContactsPage.js","js/SettingsPage.js","js/StartScreen.js","js/Shell.js","js/EpixMail.js"]
+  "first_paint": ["index.html","css/all.css","js/lib/maquette.js","js/lib/marked.min.js","js/lib/epixframe.js","js/lib/epix-avatar.js","js/utils/LogMixin.js","js/utils/Deferred.js","js/utils/Dollar.js","js/utils/Prototypes.js","js/utils/RateLimit.js","js/utils/Translate.js","js/utils/Animation.js","js/utils/Menu.js","js/utils/Text.js","js/utils/Time.js","js/utils/Autocomplete.js","js/utils/Crypto.js","js/Channel.js","js/User.js","js/ThreadStore.js","js/Message.js","js/MessageList.js","js/MessageListThreads.js","js/MessageListSent.js","js/SearchBar.js","js/MessageLists.js","js/MessageThread.js","js/MessageCreate.js","js/ContactsPage.js","js/SettingsPage.js","js/StartScreen.js","js/Shell.js","js/EpixMail.js"]
  },
  "postmessage_nonce_security": true,
  "signers_sign": "GxIBWAj4rrNe2VtXBRoPGIeDw+Prqt0vIs3S1n8z/St2YCif7qoSiS+dDmeZBjF4DkmJ4O+YYWAumFnOOvP0yfY=",
