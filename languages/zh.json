@@ -16,6 +16,7 @@
 	"Contacts": "通讯录",
 	"Conversation": "对话",
 	"Conversation not found": "未找到对话",
+	"Could not verify {xid}. Remove it and try again.": "无法验证 {xid}。请将其移除后重试。",
 	"Decrypting your mailbox...": "正在解密你的邮箱...",
 	"Delete": "删除",
 	"Encrypt & Send": "加密并发送",
@@ -38,6 +39,7 @@
 	"New message": "新消息",
 	"No conversations yet": "还没有对话",
 	"No matching contacts": "没有匹配的联系人",
+	"No registered xID named {xid}.": "没有名为 {xid} 的已注册 xID。",
 	"No results for": "未找到结果：",
 	"No servers, no accounts - just your xID.": "没有服务器，没有账户 - 只需你的 xID。",
 	"Not spam": "不是垃圾邮件",
@@ -53,6 +55,7 @@
 	"Select your account": "选择你的账户",
 	"Send your first message": "发送你的第一条消息",
 	"Sent": "发件箱",
+	"Separate xIDs with a space or comma.": "请用空格或英文逗号分隔多个 xID。",
 	"Show {n} earlier messages": "显示更早的 {n} 条消息",
 	"Signing failed": "签名失败",
 	"Star": "加星标",
@@ -72,6 +75,7 @@
 	"me": "我",
 	"no mail keys": "没有邮件密钥",
 	"not found": "未找到",
+	"unverified": "未验证",
 	"xID name (e.g. bob)": "xID 名称（例如 bob）",
 	"xID not found": "未找到 xID"
 }

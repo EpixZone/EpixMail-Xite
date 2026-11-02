@@ -16,8 +16,7 @@
       this.sending = false;
       this.just_sent = false;
       this.sent_delivery = null; // "published" | "queued" from the node
-      this.to_list = [];  // [{name, checking, valid, reason, seq}]
-      this._chip_seq = 0;
+      this.to_list = [];
       this.node = null;
       this.handleCloseClick = this.handleCloseClick.bind(this);
       this.handleScrimClick = this.handleScrimClick.bind(this);
@@ -34,12 +33,17 @@
           this.autocomplete.attrs.value = "";
         }
       );
-      // Commit a chip on comma too, and pop the last chip on backspace in an
-      // empty field (the autocomplete's own handler keeps Enter/arrows)
+      this.autocomplete.attrs.id = "mail-recipients";
+      this.autocomplete.attrs["aria-describedby"] = "mail-recipient-hint";
+      this.autocomplete.attrs.oninput = this.handleRecipientInput.bind(this);
+      this.autocomplete.attrs.oncompositionend = this.autocomplete.attrs.oninput;
       var autocomplete_key = this.autocomplete.handleKey;
       this.autocomplete.attrs.onkeydown = (e) => {
-        if (e.key === ",") {
+        if (e.isComposing || e.keyCode === 229) return;
+        if ((e.key === "," || e.key === " ") && this.autocomplete.selected_index >= 0) {
           this.autocomplete.handleBlur(e);
+          e.target.value = this.autocomplete.attrs.value;
+          e.preventDefault();
           return false;
         }
         if (e.key === "Backspace" && !e.target.value && this.to_list.length > 0) {
@@ -63,6 +67,21 @@
       this.node = node;
     }
 
+    handleRecipientInput(e) {
+      this.autocomplete.handleInput(e);
+      if (e.isComposing) return;
+      // Phone keyboards and paste can supply separators without a keydown.
+      var input = e.target;
+      var names = input.value.split(/[\s,]+/);
+      if (names.length === 1) return;
+      var draft = names.pop();
+      var caret = Math.max(0, input.selectionStart - (input.value.length - draft.length));
+      this.autocomplete.attrs.value = draft;
+      input.value = draft;
+      input.setSelectionRange(caret, caret);
+      names.forEach((name) => this.addRecipient(name));
+    }
+
     getContactNames() {
       var names = Page.thread_store.getContacts().map(this.stripTld);
       var used = {};
@@ -80,7 +99,7 @@
       for (var i = 0; i < this.to_list.length; i++) {
         if (this.to_list[i].name === name) return;
       }
-      var chip = {name: name, checking: true, valid: null, reason: null, seq: ++this._chip_seq};
+      var chip = {name: name, checking: true, valid: null, reason: null};
       this.to_list.push(chip);
       this.validateChip(chip);
       Page.projector.scheduleRender();
@@ -90,45 +109,31 @@
     // never surfaced during compose (it would advertise who is on the mail
     // platform). The local bundle read is only a zero-leak fast path that
     // also keeps compose working when the chain resolver is unreachable.
-    validateChip(chip) {
+    async validateChip(chip) {
       var xid = this.withTld(chip.name);
-      var seq = chip.seq;
-      // Fast path: a purely local read of the recipient's already-synced key
-      // bundle (zero network, no leak of who you're composing to). A bundle
-      // proves the xID exists, so no chain call is needed. Without one, a
-      // single chain lookup checks the ONE thing a chip validates: that the
-      // xID exists. Key-publication status is intentionally not shown.
-      Page.channel
-        .keyLookup([xid])
-        .then((res) => {
-          if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
-          var entry = res && res[Crypto.normalizeXid(xid)];
-          if (entry && entry.has_bundle) {
-            chip.checking = false;
-            chip.valid = true;
-            chip.reason = null;
-            Page.projector.scheduleRender();
-            return;
-          }
-          Page.cmd("xidResolveName", [xid], (result) => {
-            if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
-            chip.checking = false;
-            if (result && !result.error) {
-              chip.valid = true;
-              chip.reason = null;
-            } else {
-              chip.valid = false;
-              chip.reason = _("xID not found");
-            }
-            Page.projector.scheduleRender();
-          });
-        })
-        .catch(() => {
-          if (this.to_list.indexOf(chip) === -1 || chip.seq !== seq) return;
-          chip.checking = false;
-          chip.valid = false;
-          Page.projector.scheduleRender();
-        });
+      var valid = null;
+      try {
+        var entries = await Page.channel.keyLookup([xid]);
+        if (!this.to_list.includes(chip)) return;
+        if (entries && entries[xid] && entries[xid].has_bundle) {
+          valid = true;
+        } else {
+          var record = await Page.cmd("xidResolveName", [xid]);
+          if (record && record.name + "." + record.tld === xid) valid = true;
+        }
+      } catch (error) {
+        // The resolver returns this exact error for an absent name. Network
+        // and proof failures leave the name unverified.
+        if (error && error.error === "name not found: " + xid) valid = false;
+      }
+      if (!this.to_list.includes(chip)) return;
+      chip.checking = false;
+      chip.valid = valid;
+      if (valid !== true) {
+        var message = valid === false ? _("No registered xID named {xid}.") : _("Could not verify {xid}. Remove it and try again.");
+        chip.reason = message.replace("{xid}", () => xid);
+      }
+      Page.projector.scheduleRender();
     }
 
     handleChipRemoveClick(e) {
@@ -218,8 +223,8 @@
       if (!this.isFilled()) {
         for (var i = 0; i < this.to_list.length; i++) {
           var chip = this.to_list[i];
-          if (chip.valid === false) {
-            Page.cmd("wrapperNotification", ["error", chip.reason || (_("Can't send to") + " " + chip.name)]);
+          if (chip.reason) {
+            Page.cmd("wrapperNotification", ["error", chip.reason]);
             return false;
           }
           if (chip.checking) {
@@ -278,12 +283,12 @@
         classes: {
           checking: chip.checking,
           valid: chip.valid === true,
-          invalid: chip.valid === false
+          invalid: !!chip.reason
         }
       }, [
         h("span.chip-name", chip.name),
         chip.checking ? h("span.spinner") : null,
-        chip.valid === false ? h("span.chip-err", _("not found")) : null,
+        chip.reason ? h("span.chip-err", chip.valid === false ? _("not found") : _("unverified")) : null,
         h("a.chip-x", {
           href: "#Remove",
           "data-name": chip.name,
@@ -295,6 +300,10 @@
     render() {
       if (!this.visible) return void 0;
       this.autocomplete.attrs.placeholder = this.to_list.length === 0 ? _("xID name (e.g. bob)") : "";
+      var problem = this.to_list.find((chip) => chip.reason);
+      var hint = _("Separate xIDs with a space or comma.");
+      if (problem) hint = problem.reason;
+      else if (this.to_list.some((chip) => chip.checking)) hint = _("Verifying xID name...");
       return h("div.composer-scrim", {key: "compose", onclick: this.handleScrimClick}, [
         h("div.composer-modal.MessageCreate", {classes: {sent: this.just_sent}, afterCreate: this.setNode}, [
           h("div.composer-head", [
@@ -302,9 +311,10 @@
             h("a.composer-close", {href: "#Close", title: _("Close"), onclick: this.handleCloseClick}, "×")
           ]),
           h("div.to-row", [
-            h("label.label-to", _("To:")),
+            h("label.label-to", {for: "mail-recipients"}, _("To:")),
             h("div.to-chips", this.to_list.map(this.renderChip).concat([this.autocomplete.render()]))
           ]),
+          h("div.to-hint#mail-recipient-hint", {"aria-live": "polite", classes: {error: !!problem}}, hint),
           h("input.subject", {
             type: "text",
             placeholder: _("Subject"),

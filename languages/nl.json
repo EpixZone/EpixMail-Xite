@@ -16,6 +16,7 @@
 	"Contacts": "Contacten",
 	"Conversation": "Gesprek",
 	"Conversation not found": "Gesprek niet gevonden",
+	"Could not verify {xid}. Remove it and try again.": "Verificatie van {xid} is mislukt. Verwijder deze xID en probeer het opnieuw.",
 	"Decrypting your mailbox...": "Je mailbox wordt ontsleuteld...",
 	"Delete": "Verwijderen",
 	"Encrypt & Send": "Versleutelen & verzenden",
@@ -38,6 +39,7 @@
 	"New message": "Nieuw bericht",
 	"No conversations yet": "Nog geen gesprekken",
 	"No matching contacts": "Geen overeenkomende contacten",
+	"No registered xID named {xid}.": "Er is geen xID geregistreerd met de naam {xid}.",
 	"No results for": "Geen resultaten voor",
 	"No servers, no accounts - just your xID.": "Geen servers, geen accounts - alleen je xID.",
 	"Not spam": "Geen spam",
@@ -53,6 +55,7 @@
 	"Select your account": "Selecteer je account",
 	"Send your first message": "Verstuur je eerste bericht",
 	"Sent": "Postvak Uit",
+	"Separate xIDs with a space or comma.": "Scheid xID’s met een spatie of komma.",
 	"Show {n} earlier messages": "Toon {n} eerdere berichten",
 	"Signing failed": "Ondertekenen mislukt",
 	"Star": "Ster toevoegen",
@@ -72,6 +75,7 @@
 	"me": "ik",
 	"no mail keys": "geen mailsleutels",
 	"not found": "niet gevonden",
+	"unverified": "niet geverifieerd",
 	"xID name (e.g. bob)": "xID-naam (bijv. bob)",
 	"xID not found": "xID niet gevonden"
 }
