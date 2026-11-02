@@ -181,7 +181,7 @@
       var is_mine = from === my_xid;
       var renderBody = this.getBodyRenderer(msg);
       return h("div.thread-message", {key: "tm-" + msg.msg_id, classes: {mine: is_mine}}, [
-        Page.renderXidAvatar(from),
+        Page.renderXidAvatar(from, 36),
         h("div.thread-message-main", [
           h("div.thread-message-head", [
             h("span.sender", {style: "color: " + Text.toColor(from)}, is_mine ? _("me") : this.displayXid(from)),

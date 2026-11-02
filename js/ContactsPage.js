@@ -42,7 +42,7 @@
       var profile = Page.xid_profiles[xid] || {};
       var junked = Page.thread_store.isJunkSender(xid);
       return h("div.contact.card", {key: xid, classes: {junked: junked}}, [
-        Page.renderXidAvatar(xid),
+        Page.renderXidAvatar(xid, 56),
         h("div.contact-name", xid),
         profile.bio ? h("div.contact-bio", profile.bio) : null,
         h("div.contact-actions", [
