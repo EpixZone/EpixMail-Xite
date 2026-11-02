@@ -70,9 +70,9 @@
             h("h2.onboarding-title", _("Welcome to Epix Mail"))
           ]),
           h("p.onboarding-intro", [
-            _("End-to-end encrypted mail on a peer-to-peer network."), " ",
-            _("No servers, no accounts - just your xID."), " ",
-            _("You can read as a visitor; sending needs an xID.")
+            _("Encrypted mail exchanged through EpixNet peers."), " ",
+            _("Your connected EpixNet node handles message encryption and decryption. Use a node you trust."), " ",
+            _("Connect your xID to open your mailbox and send messages.")
           ]),
           h("div.onboarding-steps", [
             this.renderStep(1, _("Connect your xID"), state.cert, !state.cert),
