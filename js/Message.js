@@ -76,8 +76,8 @@
       }
       if (others.length === 0) others = [my_xid];
       return h("span.row-avatar", {classes: {group: others.length > 1}}, [
-        Page.renderXidAvatar(others[0]),
-        others.length > 1 ? Page.renderXidAvatar(others[1]) : null
+        Page.renderXidAvatar(others[0], others.length > 1 ? 32 : 40),
+        others.length > 1 ? Page.renderXidAvatar(others[1], 32) : null
       ]);
     }
 

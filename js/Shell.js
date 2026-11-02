@@ -162,7 +162,7 @@
           onclick: Page.returnFalse,
           onmousedown: this.handleAccountRailClick
         }, [
-          xid ? Page.renderXidAvatar(xid) : h("span.avatar.letter", "?"),
+          xid ? Page.renderXidAvatar(xid, 34) : h("span.avatar.letter", "?"),
           h("div.rail-account-info", [
             h("span.name", name),
             h("span.address", detail)
@@ -231,7 +231,7 @@
             title: _("Account"),
             onclick: Page.returnFalse,
             onmousedown: this.handleAccountTopClick
-          }, [xid ? Page.renderXidAvatar(xid) : h("span.avatar.letter", "?")]),
+          }, [xid ? Page.renderXidAvatar(xid, 36) : h("span.avatar.letter", "?")]),
           this.menu_account_top.render(".menu-topbar")
         ])
       ]);

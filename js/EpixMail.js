@@ -3,6 +3,10 @@
 
   window.h = maquette.h;
 
+  function bindAvatar(element) {
+    EpixAvatar.bind(element, element.getAttribute("data-avatar-url"), Number(element.getAttribute("data-avatar-size")), {background: true});
+  }
+
   class EpixMail extends EpixFrame {
     init() {
       this.params = {};
@@ -210,22 +214,19 @@
     // letter to image, maquette diffs it in place instead of throwing a
     // distinguishability error on unkeyed same-selector siblings (the
     // stacked group-row avatars) and freezing the projector.
-    renderXidAvatar(xid) {
+    renderXidAvatar(xid, size) {
       var profile = this.xid_profiles[xid];
       var avatar = profile && profile.avatar;
-      if (avatar) {
-        return h("span.avatar", {
-          key: xid || "?",
-          classes: {letter: false},
-          style: "background-image: url('" + avatar + "')"
-        });
-      }
       var name = xid ? xid.replace(/\.[^.]+$/, "") : "?";
       return h("span.avatar", {
         key: xid || "?",
-        classes: {letter: true},
-        style: "background-color: " + Text.toColor(xid || "")
-      }, (name.charAt(0) || "?").toUpperCase());
+        classes: {letter: !avatar},
+        styles: {"background-color": avatar ? "" : Text.toColor(xid || "")},
+        "data-avatar-url": avatar || "",
+        "data-avatar-size": String(size),
+        afterCreate: bindAvatar,
+        afterUpdate: bindAvatar
+      }, avatar ? [] : [(name.charAt(0) || "?").toUpperCase()]);
     }
 
     getLocalStorage() {
