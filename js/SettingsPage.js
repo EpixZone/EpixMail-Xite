@@ -1,9 +1,10 @@
 (function() {
 
-  // Settings (?Settings): the notification opt-out. The master toggle silences
-  // every external alert (dashboard, nav icon, tray, pop-ups); the sub-toggle
-  // controls only the OS/browser pop-up. Both persist in the private mail
-  // settings, so they follow the account across devices.
+  // Settings (?Settings): the notification opt-out. Both toggles gate the
+  // OS/browser pop-up (the sub-toggle only that); the dashboard, nav icon and
+  // tray badge is the node's own count over the private channel index and
+  // does not read these settings. Both persist in the private mail settings,
+  // so they follow the account across devices.
   class SettingsPage {
     constructor() {
       this.handleToggleNotifications = this.handleToggleNotifications.bind(this);
@@ -24,7 +25,6 @@
     handleToggleNotifications() {
       if (!Page.local_storage) return false;
       Page.local_storage.notifications = !this.get("notifications", true);
-      // Writes the new baseline: silences or restores the external count
       Page.saveLocalStorage();
       Page.projector.scheduleRender();
       return false;
