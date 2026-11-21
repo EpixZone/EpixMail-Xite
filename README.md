@@ -60,6 +60,11 @@ epix1pvta40a8d944w3npr9ztqrfh3wec53hh2je4fa/
 handles message encryption, decryption, indexing, and search. This replaces the
 legacy per-user mail-file architecture described in earlier versions of this README.
 
+Each device displays the messages in its own channel index. The node stores a
+sent message on the sending device and delivers it to the recipient's linked
+devices. A second device linked to the sender can therefore show the incoming
+replies while missing messages sent from the first device.
+
 Message content is plaintext in the mail UI and in the node while being processed.
 The node maintains a local decrypted index. Its optional `channel_encrypt_at_rest`
 setting is off by default in the current node source; do not assume that message

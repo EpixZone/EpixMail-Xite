@@ -22,9 +22,8 @@
       this.pending = false;
       this.dirty = true;
       this.nolimit = false;
-      this.has_more = false;
+      this.has_more = {};
       this.conv_limit = 50;
-      this.pages = 1;
       this.gen = 0;
       this._contacts = [];
       this._contactsRequest = null;
@@ -50,16 +49,9 @@
       this.pending = false;
       this.dirty = true;
       this.nolimit = false;
-      this.has_more = false;
-      this.pages = 1;
+      this.has_more = {};
       this._loaded_resolved = false;
       this.on_loaded = new Deferred();
-    }
-
-    _folderFor(mode) {
-      if (mode === "archived") return "archived";
-      if (mode === "starred") return "starred";
-      return "all";
     }
 
     _members(row) {
@@ -123,22 +115,37 @@
       };
     }
 
+    async _readPages(read, all, gen) {
+      const limit = this.conv_limit;
+      const rows = [];
+      for (;;) {
+        const page = await read(rows.length, limit);
+        rows.push(...page);
+        if (!all || page.length < limit || gen !== this.gen) return rows;
+      }
+    }
+
     load(mode, cb) {
-      var folder = this._folderFor(mode);
-      var gen = this.gen;
+      const gen = ++this.gen;
+      const all = this.nolimit;
+      const folder = (name) => (offset, limit) => Page.channel.threads(name, offset, limit);
       this.loading = true;
-      var limit = this.nolimit ? 5000 : this.conv_limit * this.pages;
-      // The Sent folder is a different list (my own messages, flat), not a
-      // filter over the threads like every other folder. Fetch both on every
-      // load: the list is small, switching folders is instant, and a send or
-      // a new_message reload refreshes Sent too.
-      Promise.all([Page.channel.threads(folder, 0, limit), Page.channel.sent(0, limit)])
-        .then((res) => {
+      // The node's "all" folder excludes archived conversations.
+      Promise.all([
+        this._readPages(folder("all"), all, gen),
+        this._readPages(folder("archived"), all, gen),
+        this._readPages((offset, limit) => Page.channel.sent(offset, limit), all, gen)
+      ])
+        .then(([inbox, archived, sent]) => {
           if (gen !== this.gen) return;
-          var rows = res[0];
-          this.sent_rows = (res[1] || []).map((m) => this._mapSent(m));
-          this.threads = rows.map((r) => this._mapThread(r));
-          this.has_more = rows.length >= limit;
+          this.sent_rows = sent.map((m) => this._mapSent(m));
+          this.threads = inbox.concat(archived).map((r) => this._mapThread(r));
+          this.has_more = {
+            inbox: !all && inbox.length === this.conv_limit,
+            archived: !all && archived.length === this.conv_limit,
+            sent: !all && sent.length === this.conv_limit
+          };
+          this.has_more.starred = this.has_more.inbox || this.has_more.archived;
           this.loaded = true;
           this.loading = false;
           this.dirty = false;
@@ -150,6 +157,7 @@
           if (cb) cb();
         })
         .catch((e) => {
+          if (gen !== this.gen) return;
           this.loading = false;
           if (cb) cb(e);
         });
@@ -157,20 +165,8 @@
 
     // Lazily fill a thread's message list from the node.
     getThread(conv_id) {
-      var t = this.threads.filter((x) => x.conv_id === conv_id)[0];
-      if (!t) {
-        t = {
-          key: "conv-" + conv_id,
-          conv_id: conv_id,
-          members: [],
-          subject: "",
-          from_xid: "",
-          thread_count: 0,
-          starred: false,
-          folder: "inbox",
-          thread_messages: null,
-        };
-      }
+      var t = this.threads.find((row) => row.conv_id === conv_id);
+      if (!t) return null;
       if (t.thread_messages === null) {
         t.thread_messages = []; // mark "loading" so we fetch once
         Page.channel
@@ -218,7 +214,7 @@
     }
 
     unreadCount() {
-      return this.threads.reduce((n, t) => n + (t.unread > 0 ? 1 : 0), 0);
+      return this.threads.reduce((n, t) => n + (t.folder === "inbox" && t.unread > 0 ? 1 : 0), 0);
     }
 
     // Star / archive persist in the node's private index (per-device state, by
