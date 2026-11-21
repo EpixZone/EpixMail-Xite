@@ -653,7 +653,10 @@ input:focus, textarea:focus { border-color: var(--epix-focus); outline: none }
 	background-color: var(--epix-surface); border: 1px solid var(--epix-border);
 	border-radius: var(--epix-radius-md); box-shadow: var(--epix-shadow); overflow: hidden
 }
-.Autocomplete .value { display: block; padding: 8px 14px; font-size: 14px; color: var(--epix-text) }
+.Autocomplete .value {
+	display: block; width: 100%; border: 0; background: transparent; padding: 8px 14px;
+	font: inherit; font-size: 14px; text-align: start; color: var(--epix-text); cursor: pointer
+}
 .Autocomplete .value:hover, .Autocomplete .value.selected {
 	background-color: var(--epix-surface-2); text-decoration: none
 }

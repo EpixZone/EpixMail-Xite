@@ -85,8 +85,12 @@
       }
     }
 
+    keepInputFocus(e) {
+      // Blur commits the partial name before a suggestion receives its click.
+      e.preventDefault();
+    }
+
     handleClick(e) {
-      if (!e.currentTarget) e.currentTarget = e.explicitOriginalTarget;
       this.attrs.value = e.currentTarget.textContent;
       if (this.onChanged) {
         this.onChanged(this.attrs.value);
@@ -127,9 +131,9 @@
         h("input.to", input_attrs),
         (this.focus && this.attrs.value) ? h("div.values", {"exitAnimation": Animation.slideUp}, [
           this.filterValues(this.attrs.value).map((value, i) => {
-            return h("a.value", {
-              "href": "#Select+Address", "key": value, "tabindex": "-1",
-              "onmousedown": this.handleClick,
+            return h("button.value", {
+              type: "button", key: value, tabindex: "-1",
+              onmousedown: this.keepInputFocus, onclick: this.handleClick,
               "classes": {"selected": this.selected_index === i}
             }, this.highlightedName(value, this.attrs.value));
           })
