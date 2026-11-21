@@ -123,7 +123,7 @@
           }).concat([
             h("a.more", {
               href: "#More",
-              classes: {visible: store.has_more, loading: store.loading},
+              classes: {visible: store.has_more[this.folder], loading: store.loading},
               onclick: this.handleMoreClick
             }, _("Load more"))
           ])

@@ -340,8 +340,8 @@
       var store = this.thread_store;
       // Inbox mail only: skip junk and archived conversations.
       var fresh = new_inbound.filter(function(m) {
-        var thread = store.getThread(m.conv_id);
-        return thread && thread.folder === "inbox";
+        var thread = store.threads.find((row) => row.conv_id === m.conv_id);
+        return !thread || thread.folder === "inbox";
       });
       if (!fresh.length) return;
       var latest = fresh[fresh.length - 1];

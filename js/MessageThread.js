@@ -204,7 +204,7 @@
     renderNotFound() {
       var store = Page.thread_store;
       // A deep link (bookmark, EpixPost link, back after restart) can point at
-      // a conversation outside the newest-20 window: load the whole mailbox
+      // a conversation outside the first page of threads: load the whole mailbox
       // once before giving up.
       if (store.loaded && !store.loading && !store.nolimit && !this._tried_nolimit) {
         this._tried_nolimit = true;
