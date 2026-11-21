@@ -18,8 +18,6 @@
       this.on_site_info = new Deferred();
       this.on_local_storage = new Deferred();
       this.local_storage = null;
-      this.notif_total = 0;          // cached SUM(my_seq), refreshed each assemble
-      this._last_notif_baseline = null;
       this._web_notif_targets = {};  // web-notification id -> conv_id (for click)
       this._web_notif_seq = 0;
       this._notif_armed = false;     // gate pop-ups until the mailbox has primed
@@ -275,29 +273,12 @@
       if (save) this.saveLocalStorage();
     }
 
-    // The node computes the dashboard/nav/tray count as SUM(my_seq) - baseline.
-    // Keeping baseline = total - unread makes that count equal the in-app
-    // unread thread count. When notifications are muted, baseline = total so
-    // the external count stays 0 (the in-app Inbox badge is unaffected).
-    notifBaseline() {
-      var total = this.notif_total || 0;
-      if (!this.local_storage || this.local_storage.notifications === false) return total;
-      var unread = (this.thread_store && this.thread_store.loaded) ? this.thread_store.unreadCount() : 0;
-      return Math.max(0, total - unread);
-    }
-
     saveLocalStorage(cb) {
       if (this.local_storage) {
         this.cmd("userGetSettings", [], (settings) => {
           settings = settings || {};
           settings.mail = this.local_storage;
-          if (!settings.notification_seen) settings.notification_seen = {};
-          var baseline = this.notifBaseline();
-          settings.notification_seen.new_conversations = baseline;
           this.cmd("userSetSettings", [settings], (res) => {
-            // Only advance the guard once the write actually landed, so a
-            // dropped write doesn't make syncNotifBaseline skip the retry.
-            if (!res || !res.error) this._last_notif_baseline = baseline;
             if (cb) cb(res);
           });
         });
@@ -336,34 +317,14 @@
     registerFeedFollows() {}
     registerNotifications() {}
 
-    // The unread total now comes from the node's channel session info (a count
-    // over the private index), never from a shared-data query.
-    refreshNotifTotal(cb) {
-      Page.channel
-        .sessionInfo()
-        .then((info) => {
-          this.notif_total = (info && info.unread) || 0;
-          if (cb) cb();
-        })
-        .catch(() => {
-          if (cb) cb();
-        });
-    }
-
-    // Persist the baseline only when it actually changed, so background loads
-    // that add nothing don't churn the settings file.
-    syncNotifBaseline() {
-      if (this.notifBaseline() !== this._last_notif_baseline) this.saveLocalStorage();
-    }
-
-    // Called after every thread assembly. Keeps the external count correct and
-    // fires an OS/browser notification for mail that arrived since last pass.
+    // Called after every thread assembly. Fires an OS/browser notification for
+    // mail that arrived since last pass. The dashboard/nav/tray badge is the
+    // node's own count over the private channel index.
     // The first pass primes the high-water mark; pop-ups stay disarmed for a
     // few seconds after so a fresh device syncing an existing mailbox does not
     // pop notifications for the backfill (this replaces a sender-timestamp
     // recency window, which mis-fired under peer clock skew).
     onThreadsAssembled(new_inbound, was_loaded) {
-      this.refreshNotifTotal(() => this.syncNotifBaseline());
       if (!this._notif_armed && !this._notif_arm_timer) {
         this._notif_arm_timer = setTimeout(() => {
           this._notif_armed = true;
@@ -473,11 +434,7 @@
         this.user.resetIdentity();
         this.user.onSiteInfo(site_info);
         this.thread_store.reset();
-        // New identity: drop the previous account's cached notification state so
-        // a save before the first assemble can't persist a stale baseline, and
-        // re-arm the pop-up priming delay.
-        this.notif_total = 0;
-        this._last_notif_baseline = null;
+        // New identity: re-arm the pop-up priming delay.
         this._notif_armed = false;
         if (this._notif_arm_timer) { clearTimeout(this._notif_arm_timer); this._notif_arm_timer = null; }
         // The feed/notification queries key off xid_directory, which was empty
