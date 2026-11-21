@@ -5,13 +5,14 @@ const {test} = require("node:test");
 const vm = require("node:vm");
 
 function composer(Page) {
-  const app = vm.createContext({Page, _: text => text, Animation: {scramble() {}}});
+  const app = vm.createContext({Page, _: text => text, Animation: {scramble() {}}, location: {pathname: "/"}});
   app.window = app;
-  for (const script of ["utils/LogMixin", "utils/Crypto", "utils/Autocomplete", "MessageCreate"]) {
+  for (const script of ["lib/maquette", "lib/marked.min", "utils/Text", "utils/LogMixin", "utils/Crypto", "utils/Autocomplete", "MessageCreate"]) {
     const file = path.resolve(__dirname, "../../js", script + ".js");
     vm.runInContext(readFileSync(file, "utf8"), app);
   }
 
+  app.h = app.maquette.h;
   return new app.MessageCreate();
 }
 
@@ -104,4 +105,25 @@ test("only a confirmed missing xID is reported as unregistered", async () => {
     assert.equal(chip.checking, false);
     assert.equal(chip.reason, `Could not verify ${chip.name}.epix. Remove it and try again.`);
   }
+});
+
+test("activating a suggestion keeps focus through mousedown and commits the full name on click", () => {
+  const compose = composer({
+    projector: {scheduleRender() {}},
+    thread_store: {getContacts() { return ["bob.epix"]; }},
+    channel: {async keyLookup() { return {"bob.epix": {has_bundle: true}}; }}
+  });
+  const autocomplete = compose.autocomplete;
+  autocomplete.handleInput({target: {value: "bo"}});
+  const suggestion = autocomplete.render().children[1].children[0];
+  assert.equal(suggestion.vnodeSelector, "button.value");
+  assert.equal(suggestion.properties.type, "button");
+
+  const down = new Event("mousedown", {cancelable: true});
+  suggestion.properties.onmousedown(down);
+  assert.equal(down.defaultPrevented, true);
+  assert.equal(compose.to_list.length, 0);
+  suggestion.properties.onclick({currentTarget: {textContent: "bob"}});
+  assert.deepEqual(Array.from(compose.to_list, chip => chip.name), ["bob"]);
+  assert.equal(autocomplete.attrs.value, "");
 });
